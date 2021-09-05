@@ -1,3 +1,8 @@
+import dash
+import dash_bootstrap_components as dbc
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
 import json
 import base64
 import datetime
@@ -7,7 +12,6 @@ import math
 import pandas as pd
 import flask
 import dash
-import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
@@ -16,6 +20,8 @@ from dash.dependencies import Input, Output, State
 from plotly import tools
 import dash_table
 from dash.exceptions import PreventUpdate
+import collections
+import plotly.express as px
 
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -67,7 +73,15 @@ def default_layout(fig):
 
 
 df = pd.DataFrame()
-
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "12rem",
+    "padding": "2rem 1rem",
+    "background-color": "#3B4873",
+}
 
 CONTENT_STYLE = {
     "margin-left": "18rem",
@@ -95,7 +109,7 @@ navbar_ = html.Div(
         dbc.NavbarSimple(
             children=[
                 dbc.Button(
-                    "Sidebar", outline=True, color="secondary", id="btn_sidebar"
+                    "Sidebar", outline=True, color="secondary", id="btn_sidebar_"
                 ),
                 dbc.NavItem(dbc.NavLink("Page 1", href="#")),
                 dbc.DropdownMenu(
@@ -106,6 +120,7 @@ navbar_ = html.Div(
                     ],
                     nav=True,
                     in_navbar=True,
+                    # label="More",
                 ),
             ],
         )
@@ -141,6 +156,49 @@ SIDEBAR_STYLE = {
     "padding": "0.5rem 1rem",
     "background-color": "#1d1b31",
 }
+
+SIDEBAR_STYLE_ = {
+    "position": "absolute",
+    "top": 5,
+    "left": 0,
+    "bottom": 0,
+    "width": "20rem",
+    "height": "1080px",
+    "z-index": 1,
+    "overflow-x": "hidden",
+    "transition": "all 0.5s",
+    "padding": "0.5rem 1rem",
+    "background-color": "#1d1b31",
+}
+SIDEBAR_STYLE_2 = {
+    "position": "absolute",
+    "left": "-16rem",
+    "top": 5,
+    "bottom": 0,
+    "width": "20rem",
+    "height": "1080px",
+    "z-index": 1,
+    "overflow-x": "hidden",
+    "transition": "all 0.5s",
+    "padding": "0.5rem 1rem",
+    "background-color": "#1d1b31",
+}
+
+primary_graph_style = {
+    "color": "white",
+    "position": "relative",
+    "margin-left": "70px",
+    "display": "block",
+}
+graph_options_1_style = {"padding-top": "5px", "display": "block"}
+graph_options_2_style = {"padding-top": "5px", "display": "block"}
+graph_options_3_style = {
+    "padding-top": "5px",
+    "display": "block",
+    "position": "relative",
+}
+normal_side = {"top": 53, "position": "absolute", "height": "1000"}
+
 sidebar_ = html.Div(
     [
         dbc.Row(
@@ -175,7 +233,6 @@ sidebar_ = html.Div(
                                                                                                 ),
                                                                                                 html.A(
                                                                                                     "Main",
-                                                                                                    className="",
                                                                                                     style={
                                                                                                         "color": "white"
                                                                                                     },
@@ -274,7 +331,6 @@ sidebar_ = html.Div(
                                                                 align="center",
                                                                 no_gutters=True,
                                                             ),
-                                                            # href="/tutorial",
                                                             className="iocn-link",
                                                             id="tutorial",
                                                         )
@@ -291,15 +347,274 @@ sidebar_ = html.Div(
                             ),
                         ],
                         className="sidebar close",
-                        style={"top": 53, "position": "absolute", "height": "1000"},
                         vertical=True,
                         pills=True,
                         id="sidebar",
                     ),
                 ),
+                dbc.Col(
+                    [
+                        html.Div(
+                            "Primary Graph Type",
+                            id="main-title",
+                            style={
+                                "color": "white",
+                                "position": "relative",
+                                "margin-left": "70px",
+                                "display": "block",
+                            },
+                        ),
+                        html.Div(
+                            children=[
+                                html.Button(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Div(
+                                                        children=[
+                                                            html.Img(
+                                                                src="/assets/icons/icons8-scatter-plot-64.png",
+                                                                # height="64px",
+                                                                className="center",
+                                                            ),
+                                                            html.A(
+                                                                "Scatter",
+                                                                className="",
+                                                                style={
+                                                                    "color": "white"
+                                                                },
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                        align="center",
+                                        no_gutters=True,
+                                    ),
+                                    id="btn_sidebar_scatter",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "70px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "background": "white",
+                                        "display": "inline",
+                                    },
+                                ),
+                                html.Button(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Div(
+                                                        children=[
+                                                            html.Img(
+                                                                src="/assets/icons/icons8-line-chart-64.png",
+                                                                className="center",
+                                                            ),
+                                                            html.A(
+                                                                "Line",
+                                                                className="",
+                                                                style={
+                                                                    "color": "white"
+                                                                },
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                        align="center",
+                                        no_gutters=True,
+                                    ),
+                                    id="btn_sidebar_lines",
+                                    style={
+                                        "position": "sticky",
+                                        "margin-left": "40px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "background": "white",
+                                        "display": "inline",
+                                    },
+                                ),
+                            ],
+                            id="graph-options-1",
+                            style={
+                                "padding-top": "5px",
+                            },
+                        ),
+                        html.Div(
+                            children=[
+                                html.Button(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Div(
+                                                        children=[
+                                                            html.Img(
+                                                                src="/assets/icons/icons8-bar-chart-64.png",
+                                                                className="center",
+                                                            ),
+                                                            html.A(
+                                                                "Bar",
+                                                                className="",
+                                                                style={
+                                                                    "color": "white"
+                                                                },
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                        align="center",
+                                        no_gutters=True,
+                                    ),
+                                    id="btn_sidebar_bar",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "70px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "background": "white",
+                                        "display": "inline",
+                                    },
+                                ),
+                                html.Button(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Div(
+                                                        children=[
+                                                            html.Img(
+                                                                src="/assets/icons/boxplot.png",
+                                                                height="30px",
+                                                                width="15px",
+                                                                className="center",
+                                                            ),
+                                                            html.A(
+                                                                "Boxplot",
+                                                                className="",
+                                                                style={
+                                                                    "color": "white"
+                                                                },
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                        align="center",
+                                        no_gutters=True,
+                                    ),
+                                    id="btn_sidebar_box",
+                                    style={
+                                        "position": "sticky",
+                                        "margin-left": "40px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "background": "white",
+                                        "display": "inline",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "5px",
+                            },
+                            id="graph-options-2",
+                        ),
+                        html.Div(
+                            children=[
+                                html.Button(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Div(
+                                                        children=[
+                                                            html.Img(
+                                                                src="/assets/icons/icons8-area-chart-64.png",
+                                                                className="center",
+                                                            ),
+                                                            html.A(
+                                                                "Area",
+                                                                className="",
+                                                                style={
+                                                                    "color": "white"
+                                                                },
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                        align="center",
+                                        no_gutters=True,
+                                    ),
+                                    id="btn_sidebar_area",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "70px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "background": "white",
+                                        "display": "inline",
+                                    },
+                                ),
+                                html.Button(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Div(
+                                                        children=[
+                                                            html.Img(
+                                                                src="/assets/icons/icons8-foam-bubbles-64.png",
+                                                                className="center",
+                                                            ),
+                                                            html.A(
+                                                                "Bubble",
+                                                                className="",
+                                                                style={
+                                                                    "color": "white"
+                                                                },
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                        align="center",
+                                        no_gutters=True,
+                                    ),
+                                    id="btn_sidebar_bubble",
+                                    style={
+                                        "position": "sticky",
+                                        "margin-left": "40px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "background": "white",
+                                        "display": "inline",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "5px",
+                            },
+                            id="graph-options-3",
+                        ),
+                    ],
+                    style=SIDEBAR_STYLE_2,
+                    id="pls",
+                ),
             ]
         )
     ],
+    style=normal_side,  # normal_side
 )
 
 
@@ -317,9 +632,6 @@ def toggle_navbar_collapse(n, is_open):
 
 ############################################################################################################
 
-
-# the styles for the main content position it to the right of the sidebar and
-# add some padding.
 CONTENT_STYLE_OLD = {
     "margin-left": "18rem",
     "margin-right": "2rem",
@@ -345,7 +657,19 @@ CONTENT_STYLE2 = {
     "padding": "2rem 1rem",
 }
 
+
 content = html.Div(id="page-content", style=CONTENT_STYLE)
+
+other_stylez = {
+    "position": "relative",
+    "color": "#3456FF",
+    "size": "1000",
+    "top": 100,
+    "left": 100,
+    "right": 0,
+    "bottom": 0,
+    "display": "show",
+}
 
 app.layout = html.Div(
     [
@@ -397,8 +721,8 @@ load_div = html.Div(
 
 @app.callback(
     [
-        Output("sidebar_", "style"),
         Output("page-content", "style"),
+        Output("pls", "style"),
         Output("side_click", "data"),
     ],
     [Input("btn_sidebar", "n_clicks")],
@@ -409,29 +733,32 @@ load_div = html.Div(
 def toggle_sidebar(n, nclick):
     if n:
         if nclick == "SHOW":
-            sidebar_style = {"top": 53}
+            pls = SIDEBAR_STYLE_
             content_style = {
                 "transition": "margin-left .5s",
             }
             cur_nclick = "HIDDEN"
+
         else:
-            sidebar_style = SIDEBAR_STYLE
+            pls = SIDEBAR_STYLE_2
             content_style = {
                 "transition": "margin-left .5s",
                 "margin-left": "5rem",
             }
-            cur_nclick = "SHOW"
+            cur_nclick = ("SHOW",)
+
     else:
         content_style = CONTENT_STYLE
+        pls = SIDEBAR_STYLE_2
         cur_nclick = "SHOW"
 
-    return sidebar_style, content_style, cur_nclick
+    return content_style, pls, cur_nclick
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname == "/":
-        return load_div  # html.P("This is the content of the home page!")
+        return load_div
     elif pathname == "/guidelines":
         return html.P("Guidelines")
     elif pathname == "/tutorial":
@@ -663,10 +990,13 @@ def update_table(page_current, page_size, sort_by, filter):
         col_name, operator, filter_value = split_filter_part(filter_part)
 
         if operator in ("eq", "ne", "lt", "le", "gt", "ge"):
+            # these operators match pandas series operator method names
             dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
         elif operator == "contains":
             dff = dff.loc[dff[col_name].str.contains(filter_value)]
         elif operator == "datestartswith":
+            # this is a simplification of the front-end filtering logic,
+            # only works with complete fields in standard format
             dff = dff.loc[dff[col_name].str.startswith(filter_value)]
 
     if len(sort_by):
@@ -693,26 +1023,6 @@ def update_table(page_current, page_size, sort_by, filter):
 ##########################################Table filtering
 
 
-def split_filter_part(filter_part):
-    for operator_type in operators:
-        for operator in operator_type:
-            if operator in filter_part:
-                name_part, value_part = filter_part.split(operator, 1)
-                name = name_part[name_part.find("{") + 1 : name_part.rfind("}")]
-
-                value_part = value_part.strip()
-                v0 = value_part[0]
-                if v0 == value_part[-1] and v0 in ("'", '"', "`"):
-                    value = value_part[1:-1].replace("\\" + v0, v0)
-                else:
-                    try:
-                        value = float(value_part)
-                    except ValueError:
-                        value = value_part
-
-                return name, operator_type[0].strip(), value
-
-    return [None] * 3
 
 
 @app.callback(
@@ -724,6 +1034,7 @@ def toggle_modal(n1, n2, is_open):
     if n1 or n2:
         return not is_open
     return is_open
+
 
 
 if __name__ == "__main__":
