@@ -47,7 +47,60 @@ def default_graph(
         )
     return fig
 
+def line_chart(
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
+):
+    fig = go.Figure()
+    for y in yaxis_column_name:
+        fig.add_trace(
+            go.Scatter(x=df[xaxis_column_name[0]], y=df[y], mode="lines", name=y)
+        )
+    return fig
 
+def bar_chart(
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
+):
+    fig = go.Figure()
+    for y in yaxis_column_name:
+        fig.add_trace(
+            go.Bar(x=df[xaxis_column_name[0]], y=df[y], name=y)
+        )
+    return fig
+
+def area_chart(
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
+):
+    fig = go.Figure()
+    for y in yaxis_column_name:
+        fig.add_trace(
+            go.Scatter(x=df[xaxis_column_name[0]], y=df[y], name=y, fill='tozeroy')
+        )
+    return fig
+
+def box_plot(
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
+):
+    fig = go.Figure()
+    for i in yaxis_column_name:
+        if len(xaxis_column_name) > 0:
+            for y in yaxis_column_name:
+                fig.add_trace(
+                    go.Box(x=df[xaxis_column_name[0]], y=df[y], name=y)
+                )
+        else:
+            for y in yaxis_column_name:
+                fig.add_trace(
+                    go.Box(y=df[y], name=y)
+                )
+    return fig
 def default_layout(fig):
     fig.update_layout(
         template="ggplot2",
@@ -393,6 +446,7 @@ sidebar_ = html.Div(
                                         align="center",
                                         no_gutters=True,
                                     ),
+                                    n_clicks=0,
                                     id="btn_sidebar_scatter",
                                     style={
                                         "position": "relative",
@@ -430,6 +484,7 @@ sidebar_ = html.Div(
                                         no_gutters=True,
                                     ),
                                     id="btn_sidebar_lines",
+                                    n_clicks=0,
                                     style={
                                         "position": "sticky",
                                         "margin-left": "40px",
@@ -473,6 +528,7 @@ sidebar_ = html.Div(
                                         align="center",
                                         no_gutters=True,
                                     ),
+                                    n_clicks=0,
                                     id="btn_sidebar_bar",
                                     style={
                                         "position": "relative",
@@ -640,7 +696,7 @@ CONTENT_STYLE_OLD = {
 
 CONTENT_STYLE = {
     "transition": "margin-left .5s",
-    "margin-left": "18rem",
+    "margin-left": "8rem",
     "margin-right": "0rem",
     "padding": "2rem 1rem",
 }
@@ -736,6 +792,7 @@ def toggle_sidebar(n, nclick):
             pls = SIDEBAR_STYLE_
             content_style = {
                 "transition": "margin-left .5s",
+                "margin-left": "20rem",
             }
             cur_nclick = "HIDDEN"
 
@@ -743,7 +800,7 @@ def toggle_sidebar(n, nclick):
             pls = SIDEBAR_STYLE_2
             content_style = {
                 "transition": "margin-left .5s",
-                "margin-left": "5rem",
+                "margin-left": "8rem",
             }
             cur_nclick = ("SHOW",)
 
@@ -911,13 +968,36 @@ def generate_open_close_menu_callback():
     Output("indicator-graphic", "figure"),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
+    Input('btn_sidebar_lines', 'n_clicks'),
+    Input('btn_sidebar_scatter', 'n_clicks'),
+    Input('btn_sidebar_bar', 'n_clicks'),
+    Input('btn_sidebar_area', 'n_clicks'),
+    Input('btn_sidebar_box', 'n_clicks')
 )
 def update_graph(
     xaxis_column_name,
     yaxis_column_name,
+    n_clicks_line,
+    n_clicks_scatter,
+    n_clicks_bar,
+    n_clicks_area,
+    n_clicks_box
 ):
     dff = df.copy()
-    fig = default_graph(dff, xaxis_column_name, yaxis_column_name)
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if 'btn_sidebar_lines' in changed_id:
+        print('line triggered')
+        fig = line_chart(dff, xaxis_column_name, yaxis_column_name)
+    elif 'btn_sidebar_scatter' in changed_id:
+        fig = default_graph(dff, xaxis_column_name, yaxis_column_name)
+    elif 'btn_sidebar_bar' in changed_id:
+        fig = bar_chart(dff, xaxis_column_name, yaxis_column_name)
+    elif 'btn_sidebar_area' in changed_id:
+        fig = area_chart(dff, xaxis_column_name, yaxis_column_name)
+    elif 'btn_sidebar_box' in changed_id:
+        fig = box_plot(dff, xaxis_column_name, yaxis_column_name)
+    else:
+        fig = default_graph(dff, xaxis_column_name, yaxis_column_name)
     print(yaxis_column_name)
     default_layout(fig)
     return fig
