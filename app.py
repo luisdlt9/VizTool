@@ -22,6 +22,7 @@ import dash_table
 from dash.exceptions import PreventUpdate
 import collections
 import plotly.express as px
+from plotly.validators.scatter.marker import SymbolValidator
 
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -35,22 +36,40 @@ app.css.append_css({"external_url": external_stylesheets})
 ##########################################Charts########################################################################
 
 
-def default_graph(
-    df,
-    xaxis_column_name,
-    yaxis_column_name,
-):
+def scatter_symbols():
+    raw_symbols = SymbolValidator().values
+    namestems = []
+    namevariants = []
+    symbols = []
+    for i in range(0, len(raw_symbols), 3):
+        name = raw_symbols[i + 2]
+        symbols.append(raw_symbols[i])
+        namestems.append(name.replace("-open", "").replace("-dot", ""))
+        namevariants.append(name[len(namestems[-1]) :])
+    symbols = [name + variant for name, variant in zip(namestems, namevariants)]
+    return [dict(zip(("label", "value"), symbol)) for symbol in zip(symbols, symbols)]
+
+
+def default_graph(df, xaxis_column_name, yaxis_column_name, marker_size, marker_style):
     fig = go.Figure()
     for y in yaxis_column_name:
         fig.add_trace(
-            go.Scatter(x=df[xaxis_column_name[0]], y=df[y], mode="markers", name=y)
+            go.Scatter(
+                x=df[xaxis_column_name[0]],
+                y=df[y],
+                mode="markers",
+                name=y,
+                marker_size=marker_size,
+                marker_symbol=marker_style,
+            )
         )
     return fig
 
+
 def line_chart(
-        df,
-        xaxis_column_name,
-        yaxis_column_name,
+    df,
+    xaxis_column_name,
+    yaxis_column_name,
 ):
     fig = go.Figure()
     for y in yaxis_column_name:
@@ -59,48 +78,47 @@ def line_chart(
         )
     return fig
 
+
 def bar_chart(
-        df,
-        xaxis_column_name,
-        yaxis_column_name,
+    df,
+    xaxis_column_name,
+    yaxis_column_name,
 ):
     fig = go.Figure()
     for y in yaxis_column_name:
-        fig.add_trace(
-            go.Bar(x=df[xaxis_column_name[0]], y=df[y], name=y)
-        )
+        fig.add_trace(go.Bar(x=df[xaxis_column_name[0]], y=df[y], name=y))
     return fig
+
 
 def area_chart(
-        df,
-        xaxis_column_name,
-        yaxis_column_name,
+    df,
+    xaxis_column_name,
+    yaxis_column_name,
 ):
     fig = go.Figure()
     for y in yaxis_column_name:
         fig.add_trace(
-            go.Scatter(x=df[xaxis_column_name[0]], y=df[y], name=y, fill='tozeroy')
+            go.Scatter(x=df[xaxis_column_name[0]], y=df[y], name=y, fill="tozeroy")
         )
     return fig
 
+
 def box_plot(
-        df,
-        xaxis_column_name,
-        yaxis_column_name,
+    df,
+    xaxis_column_name,
+    yaxis_column_name,
 ):
     fig = go.Figure()
     for i in yaxis_column_name:
         if len(xaxis_column_name) > 0:
             for y in yaxis_column_name:
-                fig.add_trace(
-                    go.Box(x=df[xaxis_column_name[0]], y=df[y], name=y)
-                )
+                fig.add_trace(go.Box(x=df[xaxis_column_name[0]], y=df[y], name=y))
         else:
             for y in yaxis_column_name:
-                fig.add_trace(
-                    go.Box(y=df[y], name=y)
-                )
+                fig.add_trace(go.Box(y=df[y], name=y))
     return fig
+
+
 def default_layout(fig):
     fig.update_layout(
         template="ggplot2",
@@ -408,7 +426,7 @@ sidebar_ = html.Div(
                 dbc.Col(
                     [
                         html.Div(
-                            "Primary Graph Type",
+                            dcc.Markdown("**Primary Graph Type**"),
                             id="main-title",
                             style={
                                 "color": "white",
@@ -662,6 +680,110 @@ sidebar_ = html.Div(
                                 "padding-top": "5px",
                             },
                             id="graph-options-3",
+                        ),
+                        html.Div(
+                            dcc.Markdown("**Scatter Options**"),
+                            id="main-title_2",
+                            style={
+                                "color": "white",
+                                "position": "relative",
+                                "margin-left": "70px",
+                                "display": "block",
+                                "padding-top": "5px",
+                            },
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    "Marker Size:",
+                                    id="btn_sidebar_area__",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "67px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "color": "white",
+                                        "display": "inline",
+                                        "size": "10",
+                                    },
+                                ),
+                                dbc.Input(
+                                    placeholder="5",
+                                    bs_size="sm",
+                                    value=5,
+                                    id="marker_size",
+                                    style={
+                                        "position": "sticky",
+                                        "margin-left": "3px",
+                                        # "padding": "3px",
+                                        "border": "none",
+                                        "display": "inline",
+                                        "width": "10%",
+                                        "textAlign": "center",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "5px",
+                            },
+                            id="graph-options-4",
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    "Marker Style:",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "67px",
+                                        "top": "8px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "color": "white",
+                                        "display": "inline",
+                                        "size": "10",
+                                    },
+                                ),
+                                html.Div(
+                                    dcc.Dropdown(
+                                        id="marker_style_dropdown",
+                                        options=scatter_symbols(),
+                                        value="circle",
+                                        style={
+                                            "width": "100px",
+                                            "height": "8px",
+                                            #'top':'10%',
+                                            #    "position": "sticky",
+                                            #    "margin-left": "3px",
+                                            # "padding": "3px",
+                                            #     "border": "none",
+                                            # "display": "table-cell",
+                                            "vertical-align": "middle",
+                                            # "textAlign": "center",
+                                            # 'line-height':'normal',
+                                            "font-size": 10,
+                                        },
+                                    ),
+                                    style={
+                                        #'width':'1px',
+                                        "position": "absolute",
+                                        "margin-left": "5px",
+                                        "margin-top": "3px",
+                                        "background": "",
+                                        # 'max-heigth':'50%',
+                                        # "padding": "3px",
+                                        # "border": "none",
+                                        "display": "inline",
+                                        #'padding':'16px',
+                                        # 'width': '1.5px',
+                                        # 'height':'3px',
+                                        # "textAlign": "center",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "5px",
+                            },
+                            id="graph-options-5",
                         ),
                     ],
                     style=SIDEBAR_STYLE_2,
@@ -968,11 +1090,13 @@ def generate_open_close_menu_callback():
     Output("indicator-graphic", "figure"),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
-    Input('btn_sidebar_lines', 'n_clicks'),
-    Input('btn_sidebar_scatter', 'n_clicks'),
-    Input('btn_sidebar_bar', 'n_clicks'),
-    Input('btn_sidebar_area', 'n_clicks'),
-    Input('btn_sidebar_box', 'n_clicks')
+    Input("btn_sidebar_lines", "n_clicks"),
+    Input("btn_sidebar_scatter", "n_clicks"),
+    Input("btn_sidebar_bar", "n_clicks"),
+    Input("btn_sidebar_area", "n_clicks"),
+    Input("btn_sidebar_box", "n_clicks"),
+    Input("marker_size", "value"),
+    Input("marker_style_dropdown", "value"),
 )
 def update_graph(
     xaxis_column_name,
@@ -981,23 +1105,33 @@ def update_graph(
     n_clicks_scatter,
     n_clicks_bar,
     n_clicks_area,
-    n_clicks_box
+    n_clicks_box,
+    marker_size,
+    marker_style,
 ):
     dff = df.copy()
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if 'btn_sidebar_lines' in changed_id:
-        print('line triggered')
+    changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
+    if "btn_sidebar_lines" in changed_id:
+        print("line triggered")
         fig = line_chart(dff, xaxis_column_name, yaxis_column_name)
-    elif 'btn_sidebar_scatter' in changed_id:
-        fig = default_graph(dff, xaxis_column_name, yaxis_column_name)
-    elif 'btn_sidebar_bar' in changed_id:
+    elif "btn_sidebar_scatter" in changed_id:
+        if marker_size == "":
+            marker_size = 5
+        fig = default_graph(
+            dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style
+        )
+    elif "btn_sidebar_bar" in changed_id:
         fig = bar_chart(dff, xaxis_column_name, yaxis_column_name)
-    elif 'btn_sidebar_area' in changed_id:
+    elif "btn_sidebar_area" in changed_id:
         fig = area_chart(dff, xaxis_column_name, yaxis_column_name)
-    elif 'btn_sidebar_box' in changed_id:
+    elif "btn_sidebar_box" in changed_id:
         fig = box_plot(dff, xaxis_column_name, yaxis_column_name)
     else:
-        fig = default_graph(dff, xaxis_column_name, yaxis_column_name)
+        if marker_size == "":
+            marker_size = 5
+        fig = default_graph(
+            dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style
+        )
     print(yaxis_column_name)
     default_layout(fig)
     return fig
@@ -1103,8 +1237,6 @@ def update_table(page_current, page_size, sort_by, filter):
 ##########################################Table filtering
 
 
-
-
 @app.callback(
     Output("modal-centered", "is_open"),
     [Input("open-centered", "n_clicks"), Input("close-centered", "n_clicks")],
@@ -1114,7 +1246,6 @@ def toggle_modal(n1, n2, is_open):
     if n1 or n2:
         return not is_open
     return is_open
-
 
 
 if __name__ == "__main__":
