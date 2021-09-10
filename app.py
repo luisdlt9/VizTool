@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -23,7 +25,7 @@ from dash.exceptions import PreventUpdate
 import collections
 import plotly.express as px
 from plotly.validators.scatter.marker import SymbolValidator
-
+from flask import json
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -48,6 +50,18 @@ def scatter_symbols():
         namevariants.append(name[len(namestems[-1]) :])
     symbols = [name + variant for name, variant in zip(namestems, namevariants)]
     return [dict(zip(("label", "value"), symbol)) for symbol in zip(symbols, symbols)]
+
+def scatter_dropdown_options():
+    options = ['Marker Size', 'Marker Symbol', 'Marker Color', 'Opacity', 'Marker Border Width', 'Marker Border Color']
+    return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
+
+def df_column_dropdown_options():
+    cols = list(df.columns)
+    return [dict(zip(('label', 'value'), col)) for col in zip(cols,cols)]
+
+def conditional_formatting_operators():
+    conditional_operators = ["==", '>', '<', '!=', '>=', '<=']
+    return [dict(zip(("label", "value"), operator)) for operator in zip(conditional_operators, conditional_operators)]
 
 
 def default_graph(df, xaxis_column_name, yaxis_column_name, marker_size, marker_style, color, opacity, marker_border_width, marker_border_color):
@@ -277,7 +291,10 @@ graph_options_3_style = {
     "display": "block",
     "position": "relative",
 }
+
 normal_side = {"top": 53, "position": "absolute", "height": "1000"}
+
+
 
 sidebar_ = html.Div(
     [
@@ -935,6 +952,185 @@ sidebar_ = html.Div(
                                 "padding-top": "20px",
                             },
                         ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    "Change ",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "67px",
+                                        "top": "8px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "color": "white",
+                                        "display": "inline",
+                                        "size": "10",
+                                    },
+                                ),
+                                html.Div(
+                                    dcc.Dropdown(
+                                        id="conditional-change-options",
+                                        options=scatter_dropdown_options(),
+                                        value="circle",
+                                        style={
+                                            "width": "150px",
+                                            "height": "8px",
+                                            "vertical-align": "middle",
+                                            "font-size": 10,
+                                        },
+                                    ),
+                                    style={
+                                        "position": "absolute",
+                                        "margin-left": "5px",
+                                        "margin-top": "3px",
+                                        "background": "",
+                                        "display": "inline",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "45px",
+                            },
+                            id="graph-options-10",
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    "To ",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "67px",
+                                        "top": "8px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "color": "white",
+                                        "display": "inline",
+                                        "size": "10",
+                                    },
+                                ),
+                                html.Div(
+                                    dcc.Dropdown(
+                                        id="conditional-change-to",
+                                        options=scatter_dropdown_options(),
+                                        value="circle",
+                                        style={
+                                            "width": "150px",
+                                            "height": "8px",
+                                            "vertical-align": "middle",
+                                            "font-size": 10,
+                                        },
+                                    ),
+                                    style={
+                                        "position": "absolute",
+                                        "margin-left": "5px",
+                                        "margin-top": "3px",
+                                        "background": "",
+                                        "display": "inline",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "20px",
+                            },
+                            id="graph-options-13",
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    "Based on ",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "67px",
+                                        "top": "8px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "color": "white",
+                                        "display": "inline",
+                                        "size": "10",
+                                    },
+                                ),
+                                html.Div(
+                                    dcc.Dropdown(
+                                        id="conditional-change-columns",
+                                        options=[],
+                                        value="circle",
+                                        style={
+                                            "width": "150px",
+                                            "height": "8px",
+                                            "vertical-align": "middle",
+                                            "font-size": 10,
+                                        },
+                                    ),style={
+                                        "position": "absolute",
+                                        "margin-left": "5px",
+                                        "margin-top": "3px",
+                                        "background": "",
+                                        "display": "inline",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "20px",
+                            },
+                            id="graph-options-11",
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    "If values",
+                                    style={
+                                        "position": "relative",
+                                        "margin-left": "67px",
+                                        "top": "8px",
+                                        "padding": "3px",
+                                        "border": "none",
+                                        "color": "white",
+                                        "display": "inline",
+                                        "size": "10",
+                                    },
+                                ),
+                                html.Div(
+                                    dcc.Dropdown(
+                                        id="conditional-change-operators",
+                                        placeholder='',
+                                        options=conditional_formatting_operators(),
+                                        value="",
+                                        style={
+                                            "width": "50px",
+                                            "height": "8px",
+                                            "vertical-align": "middle",
+                                            "font-size": 15,
+                                        },
+                                    ), style={
+                                        "position": "absolute",
+                                        "margin-left": "5px",
+                                        "margin-top": "3px",
+                                        "background": "",
+                                        "display": "inline",
+                                    },
+                                ),
+                                dbc.Input(
+                                    bs_size="sm",
+                                    id="conditional-value",
+                                    placeholder="condition...",
+                                    style={
+                                        "position": "absolute",
+                                        "margin-left": "63px",
+                                        # "padding": "3px",
+                                        "border": "none",
+                                        "display": "inline",
+                                        "width": "30%",
+                                        "height":'30px',
+                                        "textAlign": "center",
+                                        "margin-top": "5px",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "padding-top": "20px",
+                            },
+                            id="graph-options-12",
+                        ),
                     ],
                     style=SIDEBAR_STYLE_2,
                     id="pls",
@@ -1250,7 +1446,7 @@ def generate_open_close_menu_callback():
     Input('colorpicker', 'value'),
     Input('opacity', 'value'),
     Input('border_width', 'value'),
-    Input('colorpicker_marker_border', 'value')
+    Input('colorpicker_marker_border', 'value'),
 )
 def update_graph(
     xaxis_column_name,
@@ -1265,7 +1461,7 @@ def update_graph(
     color,
     opacity,
     marker_border_width,
-    marker_border_color
+    marker_border_color,
 ):
     dff = df.copy()
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
@@ -1301,6 +1497,14 @@ def update_graph(
     print(yaxis_column_name)
     default_layout(fig)
     return fig
+
+
+@app.callback(
+    Output('conditional-change-columns', 'options'),
+    Input("output-data-upload", "children"),
+)
+def update_conditional_cols(contents):
+    return df_column_dropdown_options()
 
 
 @app.callback(
