@@ -18,7 +18,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 import io
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 from plotly import tools
 import dash_table
 from dash.exceptions import PreventUpdate
@@ -26,6 +26,7 @@ import collections
 import plotly.express as px
 from plotly.validators.scatter.marker import SymbolValidator
 from flask import json
+import numpy as np
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -34,7 +35,6 @@ app = dash.Dash(
 
 
 app.css.append_css({"external_url": external_stylesheets})
-
 ##########################################Charts########################################################################
 
 
@@ -63,6 +63,54 @@ def conditional_formatting_operators():
     conditional_operators = ["==", '>', '<', '!=', '>=', '<=']
     return [dict(zip(("label", "value"), operator)) for operator in zip(conditional_operators, conditional_operators)]
 
+def conditional_change_to_options(option):
+    if option in ['Marker Size', 'Opacity', 'Marker Border Width']:
+        children = dbc.Input(
+            bs_size="sm",
+            #value=5,
+            id="marker_size_change_to",
+            style={
+                "position": "sticky",
+                "margin-left": "3px",
+                "border": "none",
+                "display": "inline",
+                "width": "20%",
+                "textAlign": "center",
+                'margin-top': '8px'
+            },
+        )
+        return children
+    elif option in ['Marker Color', 'Marker Border Color']:
+        children = dbc.Input(
+                    type="color",
+                    id= {'type':"colorpicker_change_to", 'index': 0},
+                    value="#000000",
+                    style={"width": 20, "height": 20, 'margin-top':'8px'},
+
+                    )
+        return children
+    elif option in ['Marker Symbol']:
+        children = dcc.Dropdown(
+                    id="marker_style_dropdown_change_to",
+                    options=scatter_symbols(),
+                    style={
+                        "width": "100px",
+                        "height": "8px",
+                        "vertical-align": "middle",
+                        "font-size": 10,
+                    },
+                )
+        return children
+    else:
+        pass
+
+def operators_change(df,operator, original_value, new_value, col, condition):
+    if operator == '>':
+        print('operators works')
+        #new = np.where(np.logical_and(df[col] > float(condition), df[col] < float(condition)), new_value, original_value)
+        new = np.where(df[col] > float(condition), new_value, original_value)
+        return new
+
 
 def default_graph(df, xaxis_column_name, yaxis_column_name, marker_size, marker_style, color, opacity, marker_border_width, marker_border_color):
     fig = go.Figure()
@@ -79,10 +127,9 @@ def default_graph(df, xaxis_column_name, yaxis_column_name, marker_size, marker_
                     line=dict(width=marker_border_width,
                               color=marker_border_color
 
-                    )
+                              )
                 ),
                 name=y,
-               # marker_size=marker_size,
                 marker_symbol=marker_style,
             )
         )
@@ -1009,17 +1056,7 @@ sidebar_ = html.Div(
                                     },
                                 ),
                                 html.Div(
-                                    dcc.Dropdown(
-                                        id="conditional-change-to",
-                                        options=scatter_dropdown_options(),
-                                        value="circle",
-                                        style={
-                                            "width": "150px",
-                                            "height": "8px",
-                                            "vertical-align": "middle",
-                                            "font-size": 10,
-                                        },
-                                    ),
+                                    id='conditional-change-to',
                                     style={
                                         "position": "absolute",
                                         "margin-left": "5px",
@@ -1094,7 +1131,6 @@ sidebar_ = html.Div(
                                         id="conditional-change-operators",
                                         placeholder='',
                                         options=conditional_formatting_operators(),
-                                        value="",
                                         style={
                                             "width": "50px",
                                             "height": "8px",
@@ -1195,7 +1231,8 @@ other_stylez = {
     "display": "show",
 }
 
-app.layout = html.Div(
+def serve_layout():
+    layout = html.Div(
     [
         dcc.Store(id="side_click"),
         dcc.Store(id="session", storage_type="session"),
@@ -1204,7 +1241,10 @@ app.layout = html.Div(
         sidebar_,
         content,
     ]
-)
+    )
+    return layout
+
+app.layout = serve_layout()
 
 load_div = html.Div(
     children=[
@@ -1447,6 +1487,11 @@ def generate_open_close_menu_callback():
     Input('opacity', 'value'),
     Input('border_width', 'value'),
     Input('colorpicker_marker_border', 'value'),
+    Input({'type': 'colorpicker_change_to', 'index': ALL}, 'value'),
+    Input('conditional-change-operators', 'value'),
+    Input('conditional-change-columns', 'value'),
+    Input('conditional-value', 'value')
+
 )
 def update_graph(
     xaxis_column_name,
@@ -1462,6 +1507,11 @@ def update_graph(
     opacity,
     marker_border_width,
     marker_border_color,
+    color_change_to,
+    operator,
+    col,
+    condition
+
 ):
     dff = df.copy()
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
@@ -1475,9 +1525,16 @@ def update_graph(
             opacity = 1.0
         if marker_border_width == "":
             marker_border_width = 0
-        fig = default_graph(
-            dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style, color, float(opacity), float(marker_border_width), marker_border_color
-        )
+        if len(color_change_to) > 0 and len(operator) > 0 and len(col) >0 and len(condition) > 0:
+            new_color = operators_change(dff,operator, color, color_change_to[0], col,condition)
+            fig = default_graph(
+                dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style, new_color, float(opacity),
+                float(marker_border_width), marker_border_color
+            )
+        else:
+            fig = default_graph(
+                dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style, color, float(opacity), float(marker_border_width), marker_border_color
+            )
     elif "btn_sidebar_bar" in changed_id:
         fig = bar_chart(dff, xaxis_column_name, yaxis_column_name)
     elif "btn_sidebar_area" in changed_id:
@@ -1491,9 +1548,16 @@ def update_graph(
             opacity = 1.0
         if marker_border_width == "":
             marker_border_width = 0
-        fig = default_graph(
-            dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style, color, float(opacity), float(marker_border_width), marker_border_color
-        )
+        if len(color_change_to) > 0 and len(operator) > 0 and len(col) > 0 and len(condition) > 0:
+            new_color = operators_change(dff, operator, color, color_change_to[0], col, condition)
+            fig = default_graph(
+                dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style, new_color, float(opacity),
+                float(marker_border_width), marker_border_color
+            )
+        else:
+            fig = default_graph(
+                dff, xaxis_column_name, yaxis_column_name, float(marker_size), marker_style, color, float(opacity), float(marker_border_width), marker_border_color
+            )
     print(yaxis_column_name)
     default_layout(fig)
     return fig
@@ -1506,6 +1570,12 @@ def update_graph(
 def update_conditional_cols(contents):
     return df_column_dropdown_options()
 
+@app.callback(
+    Output('conditional-change-to', 'children'),
+    Input('conditional-change-options', 'value')
+)
+def update_change_to_options(option):
+    return conditional_change_to_options(option)
 
 @app.callback(
     [Output("output-data-upload", "children"), Output("upload-data", "style")],
@@ -1619,4 +1689,4 @@ def toggle_modal(n1, n2, is_open):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8000, host="127.0.0.1")
+    app.run_server(debug=True, port=8000, host="127.0.0.1",dev_tools_props_check=False)
