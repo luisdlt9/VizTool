@@ -1500,6 +1500,41 @@ def generate_open_close_menu_callback():
     return open_close_menu
 
 
+def change_to_formatting(
+        marker_size,
+        marker_style,
+        color,
+        opacity,
+        marker_border_width,
+        marker_border_color,
+        change_option,
+        new_option
+):
+    options_dict = {
+        'marker_size': float(marker_size),
+        'marker_style': marker_style,
+        'color': color,
+        'opacity': float(opacity),
+        'marker_border_width': float(marker_border_width),
+        'marker_border_color': marker_border_color,
+    }
+    if change_option == 'Marker Size':
+        options_dict['marker_size'] = float(new_option)
+    elif change_option == 'Marker Symbol':
+        options_dict['marker_symbol'] = new_option
+    elif change_option == 'Marker Color':
+        options_dict['color'] = new_option
+    elif change_option == 'Opacity':
+        options_dict['opacity'] = float(new_option)
+    elif change_option == 'Marker Border Width':
+        options_dict['marker_border_width'] = float(new_option)
+    else:
+        options_dict['marker_border_color'] = new_option
+
+    return options_dict['marker_size'], options_dict['marker_style'],options_dict['color'],options_dict['opacity'],options_dict['marker_border_width'], options_dict['marker_border_color']
+
+
+
 @app.callback(
     Output("indicator-graphic", "figure"),
     Input("xaxis-column", "value"),
@@ -1515,6 +1550,7 @@ def generate_open_close_menu_callback():
     Input("opacity", "value"),
     Input("border_width", "value"),
     Input("colorpicker_marker_border", "value"),
+    Input('conditional-change-options', 'value'),
     Input({"type": "colorpicker_change_to", "index": ALL}, "value"),
     Input("conditional-change-operators", "value"),
     Input("conditional-change-columns", "value"),
@@ -1534,11 +1570,13 @@ def update_graph(
     opacity,
     marker_border_width,
     marker_border_color,
+    change_option,
     color_change_to,
     operator,
     col,
     condition,
 ):
+
     dff = df.copy()
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
     if "btn_sidebar_lines" in changed_id:
@@ -1557,19 +1595,22 @@ def update_graph(
             and len(col) > 0
             and len(condition) > 0
         ):
-            new_color = operators_change(
+            new_option = operators_change(
                 dff, operator, color, color_change_to[0], col, condition
             )
+            marker_size, marker_style, color, opacity, marker_border_width, marker_border_color = change_to_formatting(marker_size, marker_style, color, opacity, marker_border_width, marker_border_color,
+                                 change_option, new_option)
             fig = default_graph(
                 dff,
                 xaxis_column_name,
                 yaxis_column_name,
                 float(marker_size),
                 marker_style,
-                new_color,
+                color,
                 float(opacity),
                 float(marker_border_width),
                 marker_border_color,
+
             )
         else:
             fig = default_graph(
@@ -1602,19 +1643,23 @@ def update_graph(
             and len(col) > 0
             and len(condition) > 0
         ):
-            new_color = operators_change(
+            new_option = operators_change(
                 dff, operator, color, color_change_to[0], col, condition
             )
+
+            marker_size, marker_style, color, opacity, marker_border_width, marker_border_color = change_to_formatting(marker_size, marker_style, color, opacity, marker_border_width, marker_border_color,
+                                 change_option, new_option)
             fig = default_graph(
                 dff,
                 xaxis_column_name,
                 yaxis_column_name,
                 float(marker_size),
                 marker_style,
-                new_color,
+                color,
                 float(opacity),
                 float(marker_border_width),
                 marker_border_color,
+
             )
         else:
             fig = default_graph(
