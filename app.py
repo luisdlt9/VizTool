@@ -157,9 +157,9 @@ def default_graph(
                     size=marker_size,
                     opacity=opacity,
                     line=dict(width=marker_border_width, color=marker_border_color),
+                    symbol=marker_style
                 ),
                 name=y,
-                marker_symbol=marker_style,
             )
         )
     return fig
@@ -1516,7 +1516,7 @@ def change_to_formatting(
 ):
     options_dict = {
         'marker_size': float(marker_size),
-        'marker_style': marker_style,
+        'marker_symbol': marker_style,
         'color': color,
         'opacity': float(opacity),
         'marker_border_width': float(marker_border_width),
@@ -1531,11 +1531,11 @@ def change_to_formatting(
     elif change_option == 'Opacity':
         options_dict['opacity'] = new_option
     elif change_option == 'Marker Border Width':
-        options_dict['marker_border_width'] = float(new_option)
+        options_dict['marker_border_width'] = new_option
     else:
         options_dict['marker_border_color'] = new_option
 
-    return options_dict['marker_size'], options_dict['marker_style'],options_dict['color'],options_dict['opacity'],options_dict['marker_border_width'], options_dict['marker_border_color']
+    return options_dict['marker_size'], options_dict['marker_symbol'],options_dict['color'],options_dict['opacity'],options_dict['marker_border_width'], options_dict['marker_border_color']
 
 
 options =  ['Marker Size', 'Opacity', 'Marker Border Width', 'Marker Color', 'Marker Border Color', 'Marker Symbol']
