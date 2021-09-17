@@ -15,7 +15,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 import io
-from dash.dependencies import Input, Output, State, ALL
+from dash.dependencies import Input, Output, State, ALL, MATCH
 from plotly import tools
 import dash_table
 from dash.exceptions import PreventUpdate
@@ -77,7 +77,7 @@ def conditional_change_to_options(option):
     if option in ["Marker Size", "Opacity", "Marker Border Width"]:
         children = dbc.Input(
             bs_size="sm",
-            id="marker_size_change_to",
+            id={"type": f"change_to", "index": option},
             style={
                 "position": "sticky",
                 "margin-left": "3px",
@@ -92,14 +92,14 @@ def conditional_change_to_options(option):
     elif option in ["Marker Color", "Marker Border Color"]:
         children = dbc.Input(
             type="color",
-            id={"type": "colorpicker_change_to", "index": 0},
+            id={"type": f"change_to", "index": option},
             value="#000000",
             style={"width": 20, "height": 20, "margin-top": "8px"},
         )
         return children
     elif option in ["Marker Symbol"]:
         children = dcc.Dropdown(
-            id="marker_style_dropdown_change_to",
+            id={"type": f"change_to", "index": option},
             options=scatter_symbols(),
             style={
                 "width": "100px",
@@ -115,6 +115,10 @@ def conditional_change_to_options(option):
 
 def operator_filter(df, operator, original_value, new_value, col, condition):
     condition = float(condition)
+    if new_value[0].isnumeric():
+         new_value = float(new_value)
+    print(new_value)
+    print(type(new_value))
     ops = {
         ">": op.gt(df[col], condition),
         "<": op.lt(df[col], condition),
@@ -1519,13 +1523,13 @@ def change_to_formatting(
         'marker_border_color': marker_border_color,
     }
     if change_option == 'Marker Size':
-        options_dict['marker_size'] = float(new_option)
+        options_dict['marker_size'] = new_option
     elif change_option == 'Marker Symbol':
         options_dict['marker_symbol'] = new_option
     elif change_option == 'Marker Color':
         options_dict['color'] = new_option
     elif change_option == 'Opacity':
-        options_dict['opacity'] = float(new_option)
+        options_dict['opacity'] = new_option
     elif change_option == 'Marker Border Width':
         options_dict['marker_border_width'] = float(new_option)
     else:
@@ -1534,7 +1538,7 @@ def change_to_formatting(
     return options_dict['marker_size'], options_dict['marker_style'],options_dict['color'],options_dict['opacity'],options_dict['marker_border_width'], options_dict['marker_border_color']
 
 
-
+options =  ['Marker Size', 'Opacity', 'Marker Border Width', 'Marker Color', 'Marker Border Color', 'Marker Symbol']
 @app.callback(
     Output("indicator-graphic", "figure"),
     Input("xaxis-column", "value"),
@@ -1551,7 +1555,7 @@ def change_to_formatting(
     Input("border_width", "value"),
     Input("colorpicker_marker_border", "value"),
     Input('conditional-change-options', 'value'),
-    Input({"type": "colorpicker_change_to", "index": ALL}, "value"),
+    Input({"type": f"change_to", "index": ALL}, "value"),
     Input("conditional-change-operators", "value"),
     Input("conditional-change-columns", "value"),
     Input("conditional-value", "value"),
@@ -1571,14 +1575,18 @@ def update_graph(
     marker_border_width,
     marker_border_color,
     change_option,
-    color_change_to,
+    change_to,
     operator,
     col,
     condition,
 ):
 
+    options_change_to = { "Marker Size":marker_size, "Marker Symbol":marker_style, 'Marker Color':color, 'Opacity':opacity, 'Marker Border Width':marker_border_width, 'Marker Border Color':marker_border_color}
+    print(change_option)
+    print(change_to)
     dff = df.copy()
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
+    print('change option dict')
     if "btn_sidebar_lines" in changed_id:
         print("line triggered")
         fig = line_chart(dff, xaxis_column_name, yaxis_column_name)
@@ -1590,13 +1598,14 @@ def update_graph(
         if marker_border_width == "":
             marker_border_width = 0
         if (
-            len(color_change_to) > 0
+            len(change_to) > 0
             and len(operator) > 0
             and len(col) > 0
             and len(condition) > 0
         ):
+
             new_option = operators_change(
-                dff, operator, color, color_change_to[0], col, condition
+                dff, operator, options_change_to[change_option], change_to[0], col, condition
             )
             marker_size, marker_style, color, opacity, marker_border_width, marker_border_color = change_to_formatting(marker_size, marker_style, color, opacity, marker_border_width, marker_border_color,
                                  change_option, new_option)
@@ -1638,25 +1647,27 @@ def update_graph(
         if marker_border_width == "":
             marker_border_width = 0
         if (
-            len(color_change_to) > 0
+            len(change_to) > 0
             and len(operator) > 0
             and len(col) > 0
             and len(condition) > 0
         ):
             new_option = operators_change(
-                dff, operator, color, color_change_to[0], col, condition
+                dff, operator, options_change_to[change_option], change_to[0], col, condition
             )
-
+            print('new_option')
+            print(new_option)
+            print(options_change_to[change_option])
             marker_size, marker_style, color, opacity, marker_border_width, marker_border_color = change_to_formatting(marker_size, marker_style, color, opacity, marker_border_width, marker_border_color,
                                  change_option, new_option)
             fig = default_graph(
                 dff,
                 xaxis_column_name,
                 yaxis_column_name,
-                float(marker_size),
+                marker_size,
                 marker_style,
                 color,
-                float(opacity),
+                opacity,
                 float(marker_border_width),
                 marker_border_color,
 
