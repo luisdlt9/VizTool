@@ -116,7 +116,7 @@ def conditional_change_to_options(option):
 def operator_filter(df, operator, original_value, new_value, col, condition):
     condition = float(condition)
     if new_value[0].isnumeric():
-         new_value = float(new_value)
+        new_value = float(new_value)
     print(new_value)
     print(type(new_value))
     ops = {
@@ -157,7 +157,7 @@ def default_graph(
                     size=marker_size,
                     opacity=opacity,
                     line=dict(width=marker_border_width, color=marker_border_color),
-                    symbol=marker_style
+                    symbol=marker_style,
                 ),
                 name=y,
             )
@@ -1410,16 +1410,31 @@ def parse_contents(contents, filename, date):
                                 children=[
                                     dbc.FormGroup(
                                         [
-                                            dbc.Label("Dual Y Axis", className="inline-block chart-title", style={'color':'white'}),
-                                            html.Label(
-                                                children=[
-                                                    dcc.Input(type='checkbox'),
-                                                    html.Span(className='slider round')
-                                                ],
-                                                className='switch',
-                                                style={'margin-left':'5px'}
+                                            dbc.Label(
+                                                "Dual Y Axis",
+                                                className="inline-block chart-title",
+                                                style={"color": "white"},
+                                            ),
+                                            html.Div(
+                                                html.Label(
+                                                    children=[
+                                                        dcc.Input(
+                                                            type="checkbox",
+                                                            value=True,
+                                                            id="dual-y-slider",
+                                                        ),
+                                                        html.Span(
+                                                            className="slider round"
+                                                        ),
+                                                    ],
+                                                    className="switch",
+                                                    style={"margin-left": "5px"},
+                                                ),
+                                                className="inline-block chart-title",
+                                                id="dual-y-slider-container",
+                                                n_clicks=0
 
-                                            )
+                                            ),
                                         ]
                                     )
                                 ],
@@ -1437,7 +1452,7 @@ def parse_contents(contents, filename, date):
             dcc.Dropdown(
                 id="xaxis-column",
                 options=[{"value": x, "label": x} for x in df],
-                placeholder="Select x axis",
+                placeholder="Select X Axis",
                 multi=True,
                 value=[],
             ),
@@ -1447,7 +1462,7 @@ def parse_contents(contents, filename, date):
                         dcc.Dropdown(
                             id="yaxis-column",
                             options=[{"value": x, "label": x} for x in df],
-                            placeholder="Select y axis",
+                            placeholder="Select Y Axis",
                             multi=True,
                             value=[],
                             style={"width": "100%"},
@@ -1458,7 +1473,7 @@ def parse_contents(contents, filename, date):
             dcc.Dropdown(
                 id="secondary-yaxis-column",
                 options=[{"value": x, "label": x} for x in df],
-                placeholder="Select secondary y axis",
+                placeholder="Select Secondary Y Axis",
                 multi=True,
                 value=[],
                 style={"display": "none"},
@@ -1491,6 +1506,23 @@ def parse_contents(contents, filename, date):
 
 
 @app.callback(
+    Output("secondary-yaxis-column", "style"),
+    Input("dual-y-slider-container", "n_clicks"),
+)
+def generate_dual_y_axis_dropdown(n_clicks):
+    if n_clicks == 0:
+        pass
+    else:
+        n_clicks = int(n_clicks/2)
+
+    if n_clicks % 2 == 0:
+        return {'display':'none'}
+    else:
+        return {}
+
+
+
+@app.callback(
     Output("Graph Type" + "menu", "className"),
     [Input("Graph Type" + "menu_button", "n_clicks")],
     [State("Graph Type" + "menu", "className")],
@@ -1508,40 +1540,56 @@ def generate_open_close_menu_callback():
 
 
 def change_to_formatting(
-        marker_size,
-        marker_style,
-        color,
-        opacity,
-        marker_border_width,
-        marker_border_color,
-        change_option,
-        new_option
+    marker_size,
+    marker_style,
+    color,
+    opacity,
+    marker_border_width,
+    marker_border_color,
+    change_option,
+    new_option,
 ):
     options_dict = {
-        'marker_size': float(marker_size),
-        'marker_symbol': marker_style,
-        'color': color,
-        'opacity': float(opacity),
-        'marker_border_width': float(marker_border_width),
-        'marker_border_color': marker_border_color,
+        "marker_size": float(marker_size),
+        "marker_symbol": marker_style,
+        "color": color,
+        "opacity": float(opacity),
+        "marker_border_width": float(marker_border_width),
+        "marker_border_color": marker_border_color,
     }
-    if change_option == 'Marker Size':
-        options_dict['marker_size'] = new_option
-    elif change_option == 'Marker Symbol':
-        options_dict['marker_symbol'] = new_option
-    elif change_option == 'Marker Color':
-        options_dict['color'] = new_option
-    elif change_option == 'Opacity':
-        options_dict['opacity'] = new_option
-    elif change_option == 'Marker Border Width':
-        options_dict['marker_border_width'] = new_option
+    if change_option == "Marker Size":
+        options_dict["marker_size"] = new_option
+    elif change_option == "Marker Symbol":
+        options_dict["marker_symbol"] = new_option
+    elif change_option == "Marker Color":
+        options_dict["color"] = new_option
+    elif change_option == "Opacity":
+        options_dict["opacity"] = new_option
+    elif change_option == "Marker Border Width":
+        options_dict["marker_border_width"] = new_option
     else:
-        options_dict['marker_border_color'] = new_option
+        options_dict["marker_border_color"] = new_option
 
-    return options_dict['marker_size'], options_dict['marker_symbol'],options_dict['color'],options_dict['opacity'],options_dict['marker_border_width'], options_dict['marker_border_color']
+    return (
+        options_dict["marker_size"],
+        options_dict["marker_symbol"],
+        options_dict["color"],
+        options_dict["opacity"],
+        options_dict["marker_border_width"],
+        options_dict["marker_border_color"],
+    )
 
 
-options =  ['Marker Size', 'Opacity', 'Marker Border Width', 'Marker Color', 'Marker Border Color', 'Marker Symbol']
+options = [
+    "Marker Size",
+    "Opacity",
+    "Marker Border Width",
+    "Marker Color",
+    "Marker Border Color",
+    "Marker Symbol",
+]
+
+
 @app.callback(
     Output("indicator-graphic", "figure"),
     Input("xaxis-column", "value"),
@@ -1557,7 +1605,7 @@ options =  ['Marker Size', 'Opacity', 'Marker Border Width', 'Marker Color', 'Ma
     Input("opacity", "value"),
     Input("border_width", "value"),
     Input("colorpicker_marker_border", "value"),
-    Input('conditional-change-options', 'value'),
+    Input("conditional-change-options", "value"),
     Input({"type": f"change_to", "index": ALL}, "value"),
     Input("conditional-change-operators", "value"),
     Input("conditional-change-columns", "value"),
@@ -1584,12 +1632,19 @@ def update_graph(
     condition,
 ):
 
-    options_change_to = { "Marker Size":marker_size, "Marker Symbol":marker_style, 'Marker Color':color, 'Opacity':opacity, 'Marker Border Width':marker_border_width, 'Marker Border Color':marker_border_color}
+    options_change_to = {
+        "Marker Size": marker_size,
+        "Marker Symbol": marker_style,
+        "Marker Color": color,
+        "Opacity": opacity,
+        "Marker Border Width": marker_border_width,
+        "Marker Border Color": marker_border_color,
+    }
     print(change_option)
     print(change_to)
     dff = df.copy()
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
-    print('change option dict')
+    print("change option dict")
     if "btn_sidebar_lines" in changed_id:
         print("line triggered")
         fig = line_chart(dff, xaxis_column_name, yaxis_column_name)
@@ -1608,10 +1663,30 @@ def update_graph(
         ):
 
             new_option = operators_change(
-                dff, operator, options_change_to[change_option], change_to[0], col, condition
+                dff,
+                operator,
+                options_change_to[change_option],
+                change_to[0],
+                col,
+                condition,
             )
-            marker_size, marker_style, color, opacity, marker_border_width, marker_border_color = change_to_formatting(marker_size, marker_style, color, opacity, marker_border_width, marker_border_color,
-                                 change_option, new_option)
+            (
+                marker_size,
+                marker_style,
+                color,
+                opacity,
+                marker_border_width,
+                marker_border_color,
+            ) = change_to_formatting(
+                marker_size,
+                marker_style,
+                color,
+                opacity,
+                marker_border_width,
+                marker_border_color,
+                change_option,
+                new_option,
+            )
             fig = default_graph(
                 dff,
                 xaxis_column_name,
@@ -1622,7 +1697,6 @@ def update_graph(
                 float(opacity),
                 float(marker_border_width),
                 marker_border_color,
-
             )
         else:
             fig = default_graph(
@@ -1656,13 +1730,33 @@ def update_graph(
             and len(condition) > 0
         ):
             new_option = operators_change(
-                dff, operator, options_change_to[change_option], change_to[0], col, condition
+                dff,
+                operator,
+                options_change_to[change_option],
+                change_to[0],
+                col,
+                condition,
             )
-            print('new_option')
+            print("new_option")
             print(new_option)
             print(options_change_to[change_option])
-            marker_size, marker_style, color, opacity, marker_border_width, marker_border_color = change_to_formatting(marker_size, marker_style, color, opacity, marker_border_width, marker_border_color,
-                                 change_option, new_option)
+            (
+                marker_size,
+                marker_style,
+                color,
+                opacity,
+                marker_border_width,
+                marker_border_color,
+            ) = change_to_formatting(
+                marker_size,
+                marker_style,
+                color,
+                opacity,
+                marker_border_width,
+                marker_border_color,
+                change_option,
+                new_option,
+            )
             fig = default_graph(
                 dff,
                 xaxis_column_name,
@@ -1673,7 +1767,6 @@ def update_graph(
                 opacity,
                 float(marker_border_width),
                 marker_border_color,
-
             )
         else:
             fig = default_graph(
