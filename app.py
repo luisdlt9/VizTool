@@ -1408,16 +1408,19 @@ def parse_contents(contents, filename, date):
                             html.Div(
                                 className="inline-block",
                                 children=[
-                                    dcc.Dropdown(
-                                        className="dropdown-period",
-                                        id="Graph Menu" + "dropdown_period",
-                                        options=[
-                                            {"label": "5 min", "value": "5Min"},
-                                            {"label": "15 min", "value": "15Min"},
-                                            {"label": "30 min", "value": "30Min"},
-                                        ],
-                                        value="Select...",
-                                        clearable=False,
+                                    dbc.FormGroup(
+                                        [
+                                            dbc.Label("Dual Y Axis", className="inline-block chart-title", style={'color':'white'}),
+                                            html.Label(
+                                                children=[
+                                                    dcc.Input(type='checkbox'),
+                                                    html.Span(className='slider round')
+                                                ],
+                                                className='switch',
+                                                style={'margin-left':'5px'}
+
+                                            )
+                                        ]
                                     )
                                 ],
                             ),
@@ -1447,7 +1450,7 @@ def parse_contents(contents, filename, date):
                             placeholder="Select y axis",
                             multi=True,
                             value=[],
-                            style={"width": "97%"},
+                            style={"width": "100%"},
                         )
                     ),
                 ]
