@@ -23,6 +23,7 @@ import collections
 from plotly.validators.scatter.marker import SymbolValidator
 import numpy as np
 import operator as op
+from plotly.subplots import make_subplots
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -137,7 +138,7 @@ def operators_change(df, operator, original_value, new_value, col, condition):
 def default_graph(
     df,
     xaxis_column_name,
-    yaxis_column_name,
+    y_axis_dict,
     marker_size,
     marker_style,
     color,
@@ -145,23 +146,29 @@ def default_graph(
     marker_border_width,
     marker_border_color,
 ):
-    fig = go.Figure()
-    for y in yaxis_column_name:
-        fig.add_trace(
-            go.Scatter(
-                x=df[xaxis_column_name[0]],
-                y=df[y],
-                mode="markers",
-                marker=dict(
-                    color=color,
-                    size=marker_size,
-                    opacity=opacity,
-                    line=dict(width=marker_border_width, color=marker_border_color),
-                    symbol=marker_style,
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    for y in y_axis_dict:
+        column = y['name']
+        print(f'column: {column}')
+        if len(column) == 0:
+            pass
+        else:
+            fig.add_trace(
+                go.Scatter(
+                    x=df[xaxis_column_name[0]],
+                    y=df[column[0]],
+                    mode="markers",
+                    marker=dict(
+                        color=color,
+                        size=marker_size,
+                        opacity=opacity,
+                        line=dict(width=marker_border_width, color=marker_border_color),
+                        symbol=marker_style,
+                    ),
+                    name=column[0],
                 ),
-                name=y,
+                secondary_y=y['dual']
             )
-        )
     return fig
 
 
@@ -1505,16 +1512,26 @@ def parse_contents(contents, filename, date):
     )
 
 
+
+def normalize_n_clicks(n_clicks):
+    if n_clicks == 0:
+        return n_clicks
+    else:
+        n_clicks = int(n_clicks/2)
+        return n_clicks
+
+def boolean_n_clicks(n_clicks):
+    if n_clicks % 2 == 0:
+        return False
+    else:
+        return True
+
 @app.callback(
     Output("secondary-yaxis-column", "style"),
     Input("dual-y-slider-container", "n_clicks"),
 )
 def generate_dual_y_axis_dropdown(n_clicks):
-    if n_clicks == 0:
-        pass
-    else:
-        n_clicks = int(n_clicks/2)
-
+    n_clicks = normalize_n_clicks(n_clicks)
     if n_clicks % 2 == 0:
         return {'display':'none'}
     else:
@@ -1610,6 +1627,8 @@ options = [
     Input("conditional-change-operators", "value"),
     Input("conditional-change-columns", "value"),
     Input("conditional-value", "value"),
+    Input('dual-y-slider-container', 'n_clicks'),
+    Input('secondary-yaxis-column', 'value')
 )
 def update_graph(
     xaxis_column_name,
@@ -1630,7 +1649,13 @@ def update_graph(
     operator,
     col,
     condition,
+    secondary_y_clicks,
+    secondary_yaxis_columns
 ):
+    y_axis_dict = [
+    dict(zip(("name", "dual"), option))
+    for option in zip((yaxis_column_name, secondary_yaxis_columns), (False, True))
+    ]
 
     options_change_to = {
         "Marker Size": marker_size,
@@ -1690,7 +1715,7 @@ def update_graph(
             fig = default_graph(
                 dff,
                 xaxis_column_name,
-                yaxis_column_name,
+                y_axis_dict,
                 float(marker_size),
                 marker_style,
                 color,
@@ -1702,7 +1727,7 @@ def update_graph(
             fig = default_graph(
                 dff,
                 xaxis_column_name,
-                yaxis_column_name,
+                y_axis_dict,
                 float(marker_size),
                 marker_style,
                 color,
@@ -1757,30 +1782,30 @@ def update_graph(
                 change_option,
                 new_option,
             )
+
             fig = default_graph(
                 dff,
                 xaxis_column_name,
-                yaxis_column_name,
+                y_axis_dict,
                 marker_size,
                 marker_style,
                 color,
                 opacity,
                 float(marker_border_width),
-                marker_border_color,
+                marker_border_color
             )
         else:
             fig = default_graph(
                 dff,
                 xaxis_column_name,
-                yaxis_column_name,
+                y_axis_dict,
                 float(marker_size),
                 marker_style,
                 color,
                 float(opacity),
                 float(marker_border_width),
-                marker_border_color,
+                marker_border_color
             )
-    print(yaxis_column_name)
     default_layout(fig)
     return fig
 
