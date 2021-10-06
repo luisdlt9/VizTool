@@ -534,598 +534,23 @@ sidebar_ = html.Div(
                 dbc.Col(
                     [
                         html.Div(
-                            dcc.Markdown("**Primary Graph Type**"),
-                            id="main-title",
-                            style={
-                                "color": "white",
-                                "position": "relative",
-                                "margin-left": "70px",
-                                "display": "block",
-                            },
-                        ),
-                        html.Div(
-                            children=[
-                                html.Button(
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                [
-                                                    html.Div(
-                                                        children=[
-                                                            html.Img(
-                                                                src="/assets/icons/icons8-scatter-plot-64.png",
-                                                                # height="64px",
-                                                                className="center",
-                                                            ),
-                                                            html.A(
-                                                                "Scatter",
-                                                                className="",
-                                                                style={
-                                                                    "color": "white"
-                                                                },
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                        align="center",
-                                        no_gutters=True,
-                                    ),
-                                    n_clicks=0,
-                                    id="btn_sidebar_scatter",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "70px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "background": "white",
-                                        "display": "inline",
-                                    },
-                                ),
-                                html.Button(
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                [
-                                                    html.Div(
-                                                        children=[
-                                                            html.Img(
-                                                                src="/assets/icons/icons8-line-chart-64.png",
-                                                                className="center",
-                                                            ),
-                                                            html.A(
-                                                                "Line",
-                                                                className="",
-                                                                style={
-                                                                    "color": "white"
-                                                                },
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                        align="center",
-                                        no_gutters=True,
-                                    ),
-                                    id="btn_sidebar_lines",
-                                    n_clicks=0,
-                                    style={
-                                        "position": "sticky",
-                                        "margin-left": "40px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "background": "white",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            id="graph-options-1",
-                            style={
-                                "padding-top": "5px",
-                            },
-                        ),
-                        html.Div(
-                            children=[
-                                html.Button(
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                [
-                                                    html.Div(
-                                                        children=[
-                                                            html.Img(
-                                                                src="/assets/icons/icons8-bar-chart-64.png",
-                                                                className="center",
-                                                            ),
-                                                            html.A(
-                                                                "Bar",
-                                                                className="",
-                                                                style={
-                                                                    "color": "white"
-                                                                },
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                        align="center",
-                                        no_gutters=True,
-                                    ),
-                                    n_clicks=0,
-                                    id="btn_sidebar_bar",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "70px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "background": "white",
-                                        "display": "inline",
-                                    },
-                                ),
-                                html.Button(
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                [
-                                                    html.Div(
-                                                        children=[
-                                                            html.Img(
-                                                                src="/assets/icons/boxplot.png",
-                                                                height="30px",
-                                                                width="15px",
-                                                                className="center",
-                                                            ),
-                                                            html.A(
-                                                                "Boxplot",
-                                                                className="",
-                                                                style={
-                                                                    "color": "white"
-                                                                },
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                        align="center",
-                                        no_gutters=True,
-                                    ),
-                                    id="btn_sidebar_box",
-                                    style={
-                                        "position": "sticky",
-                                        "margin-left": "40px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "background": "white",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "5px",
-                            },
-                            id="graph-options-2",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Button(
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                [
-                                                    html.Div(
-                                                        children=[
-                                                            html.Img(
-                                                                src="/assets/icons/icons8-area-chart-64.png",
-                                                                className="center",
-                                                            ),
-                                                            html.A(
-                                                                "Area",
-                                                                className="",
-                                                                style={
-                                                                    "color": "white"
-                                                                },
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                        align="center",
-                                        no_gutters=True,
-                                    ),
-                                    id="btn_sidebar_area",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "70px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "background": "white",
-                                        "display": "inline",
-                                    },
-                                ),
-                                html.Button(
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                [
-                                                    html.Div(
-                                                        children=[
-                                                            html.Img(
-                                                                src="/assets/icons/icons8-foam-bubbles-64.png",
-                                                                className="center",
-                                                            ),
-                                                            html.A(
-                                                                "Bubble",
-                                                                className="",
-                                                                style={
-                                                                    "color": "white"
-                                                                },
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                        align="center",
-                                        no_gutters=True,
-                                    ),
-                                    id="btn_sidebar_bubble",
-                                    style={
-                                        "position": "sticky",
-                                        "margin-left": "40px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "background": "white",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "5px",
-                            },
-                            id="graph-options-3",
-                        ),
-                        html.Div(
-                            dcc.Markdown("**Scatter Formatting**"),
-                            id="main-title_2",
-                            style={
-                                "color": "white",
-                                "position": "relative",
-                                "margin-left": "70px",
-                                "display": "block",
-                                "padding-top": "5px",
-                            },
-                        ),
-                        html.Div(
-                            children=[
+                            [
                                 html.Div(
-                                    "Marker Size:",
-                                    id="btn_sidebar_area__",
+                                    dcc.Markdown("**Primary Graph Type**"),
+                                    id="main-title",
                                     style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "padding": "3px",
-                                        "border": "none",
                                         "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                dbc.Input(
-                                    placeholder="5",
-                                    bs_size="sm",
-                                    value=5,
-                                    id="marker_size",
-                                    style={
-                                        "position": "sticky",
-                                        "margin-left": "3px",
-                                        # "padding": "3px",
-                                        "border": "none",
-                                        "display": "inline",
-                                        "width": "10%",
-                                        "textAlign": "center",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "5px",
-                            },
-                            id="graph-options-4",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "Marker Symbol:",
-                                    style={
                                         "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
+                                        "margin-left": "70px",
+                                        "display": "block",
                                     },
                                 ),
                                 html.Div(
                                     dcc.Dropdown(
-                                        id="marker_style_dropdown",
-                                        options=scatter_symbols(),
-                                        value="circle",
-                                        style={
-                                            "width": "100px",
-                                            "height": "8px",
-                                            "vertical-align": "middle",
-                                            "font-size": 10,
-                                        },
-                                    ),
-                                    style={
-                                        "position": "absolute",
-                                        "margin-left": "5px",
-                                        "margin-top": "3px",
-                                        "background": "",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "5px",
-                            },
-                            id="graph-options-5",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "Marker Color:",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                html.Div(
-                                    dbc.Input(
-                                        type="color",
-                                        id="colorpicker",
-                                        value="#000000",
-                                        style={"width": 20, "height": 20},
-                                    ),
-                                    style={
-                                        "position": "absolute",
-                                        "margin-left": "5px",
-                                        "margin-top": "8px",
-                                        "background": "",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "20px",
-                            },
-                            id="graph-options-6",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "Opacity:",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                dbc.Input(
-                                    placeholder="1.0",
-                                    bs_size="sm",
-                                    value=1.0,
-                                    id="opacity",
-                                    style={
-                                        "position": "absolute",
-                                        "margin-left": "3px",
-                                        # "padding": "3px",
-                                        "border": "none",
-                                        "display": "inline",
-                                        "width": "10%",
-                                        "textAlign": "center",
-                                        "margin-top": "11px",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "5px",
-                            },
-                            id="graph-options-7",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "Marker Border Width:",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                dbc.Input(
-                                    placeholder="0",
-                                    bs_size="sm",
-                                    value=0,
-                                    id="border_width",
-                                    style={
-                                        "position": "absolute",
-                                        "margin-left": "3px",
-                                        # "padding": "3px",
-                                        "border": "none",
-                                        "display": "inline",
-                                        "width": "10%",
-                                        "textAlign": "center",
-                                        "margin-top": "11px",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "5px",
-                            },
-                            id="graph-options-8",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "Marker Border Color:",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                html.Div(
-                                    dbc.Input(
-                                        type="color",
-                                        id="colorpicker_marker_border",
-                                        value="#000000",
-                                        style={"width": 20, "height": 20},
-                                    ),
-                                    style={
-                                        "position": "absolute",
-                                        "margin-left": "5px",
-                                        "margin-top": "8px",
-                                        "background": "",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "5px",
-                            },
-                            id="graph-options-9",
-                        ),
-                        html.Div(
-                            dcc.Markdown("**Conditional Formatting**"),
-                            id="main-title_3",
-                            style={
-                                "color": "white",
-                                "position": "absolute",
-                                "margin-left": "70px",
-                                "display": "block",
-                                "padding-top": "20px",
-                            },
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "Change ",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                html.Div(
-                                    dcc.Dropdown(
-                                        id="conditional-change-options",
-                                        options=scatter_dropdown_options(),
-                                        value="circle",
-                                        style={
-                                            "width": "150px",
-                                            "height": "8px",
-                                            "vertical-align": "middle",
-                                            "font-size": 10,
-                                        },
-                                    ),
-                                    style={
-                                        "position": "absolute",
-                                        "margin-left": "5px",
-                                        "margin-top": "3px",
-                                        "background": "",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "45px",
-                            },
-                            id="graph-options-10",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "To ",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                html.Div(
-                                    id="conditional-change-to",
-                                    style={
-                                        "position": "absolute",
-                                        "margin-left": "5px",
-                                        "margin-top": "3px",
-                                        "background": "",
-                                        "display": "inline",
-                                    },
-                                ),
-                            ],
-                            style={
-                                "padding-top": "20px",
-                            },
-                            id="graph-options-13",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    "Based on ",
-                                    style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
-                                        "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
-                                    },
-                                ),
-                                html.Div(
-                                    dcc.Dropdown(
-                                        id="conditional-change-columns",
+                                        id="trace_dropdown",
                                         options=[],
                                         value="circle",
+                                        placeholder='Select Trace to Edit',
                                         style={
                                             "width": "150px",
                                             "height": "8px",
@@ -1134,76 +559,677 @@ sidebar_ = html.Div(
                                         },
                                     ),
                                     style={
-                                        "position": "absolute",
-                                        "margin-left": "5px",
+                                        "position": "sticky",
+                                        "margin-left": "70px",
                                         "margin-top": "3px",
                                         "background": "",
-                                        "display": "inline",
+                                        'padding-bottom':'35px'
+                                       # 'z-index': '100'
                                     },
                                 ),
-                            ],
-                            style={
-                                "padding-top": "20px",
-                            },
-                            id="graph-options-11",
-                        ),
-                        html.Div(
-                            children=[
                                 html.Div(
-                                    "If values",
+                                    children=[
+                                        html.Button(
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                children=[
+                                                                    html.Img(
+                                                                        src="/assets/icons/icons8-scatter-plot-64.png",
+                                                                        # height="64px",
+                                                                        className="center",
+                                                                    ),
+                                                                    html.A(
+                                                                        "Scatter",
+                                                                        className="",
+                                                                        style={
+                                                                            "color": "white"
+                                                                        },
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                                align="center",
+                                                no_gutters=True,
+                                            ),
+                                            n_clicks=0,
+                                            id="btn_sidebar_scatter",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "70px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "background": "white",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                        html.Button(
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                children=[
+                                                                    html.Img(
+                                                                        src="/assets/icons/icons8-line-chart-64.png",
+                                                                        className="center",
+                                                                    ),
+                                                                    html.A(
+                                                                        "Line",
+                                                                        className="",
+                                                                        style={
+                                                                            "color": "white"
+                                                                        },
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                                align="center",
+                                                no_gutters=True,
+                                            ),
+                                            id="btn_sidebar_lines",
+                                            n_clicks=0,
+                                            style={
+                                                "position": "sticky",
+                                                "margin-left": "40px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "background": "white",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    id="graph-options-1",
                                     style={
-                                        "position": "relative",
-                                        "margin-left": "67px",
-                                        "top": "8px",
-                                        "padding": "3px",
-                                        "border": "none",
+                                        "padding-top": "5px",
+                                    },
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Button(
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                children=[
+                                                                    html.Img(
+                                                                        src="/assets/icons/icons8-bar-chart-64.png",
+                                                                        className="center",
+                                                                    ),
+                                                                    html.A(
+                                                                        "Bar",
+                                                                        className="",
+                                                                        style={
+                                                                            "color": "white"
+                                                                        },
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                                align="center",
+                                                no_gutters=True,
+                                            ),
+                                            n_clicks=0,
+                                            id="btn_sidebar_bar",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "70px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "background": "white",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                        html.Button(
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                children=[
+                                                                    html.Img(
+                                                                        src="/assets/icons/boxplot.png",
+                                                                        height="30px",
+                                                                        width="15px",
+                                                                        className="center",
+                                                                    ),
+                                                                    html.A(
+                                                                        "Boxplot",
+                                                                        className="",
+                                                                        style={
+                                                                            "color": "white"
+                                                                        },
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                                align="center",
+                                                no_gutters=True,
+                                            ),
+                                            id="btn_sidebar_box",
+                                            style={
+                                                "position": "sticky",
+                                                "margin-left": "40px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "background": "white",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "5px",
+                                    },
+                                    id="graph-options-2",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Button(
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                children=[
+                                                                    html.Img(
+                                                                        src="/assets/icons/icons8-area-chart-64.png",
+                                                                        className="center",
+                                                                    ),
+                                                                    html.A(
+                                                                        "Area",
+                                                                        className="",
+                                                                        style={
+                                                                            "color": "white"
+                                                                        },
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                                align="center",
+                                                no_gutters=True,
+                                            ),
+                                            id="btn_sidebar_area",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "70px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "background": "white",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                        html.Button(
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                children=[
+                                                                    html.Img(
+                                                                        src="/assets/icons/icons8-foam-bubbles-64.png",
+                                                                        className="center",
+                                                                    ),
+                                                                    html.A(
+                                                                        "Bubble",
+                                                                        className="",
+                                                                        style={
+                                                                            "color": "white"
+                                                                        },
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                                align="center",
+                                                no_gutters=True,
+                                            ),
+                                            id="btn_sidebar_bubble",
+                                            style={
+                                                "position": "sticky",
+                                                "margin-left": "40px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "background": "white",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "5px",
+                                    },
+                                    id="graph-options-3",
+                                ),
+                                html.Div(
+                                    dcc.Markdown("**Scatter Formatting**"),
+                                    id="main-title_2",
+                                    style={
                                         "color": "white",
-                                        "display": "inline",
-                                        "size": "10",
+                                        "position": "relative",
+                                        "margin-left": "70px",
+                                        "display": "block",
+                                        "padding-top": "5px",
                                     },
                                 ),
                                 html.Div(
-                                    dcc.Dropdown(
-                                        id="conditional-change-operators",
-                                        placeholder="",
-                                        options=conditional_formatting_operators(),
-                                        style={
-                                            "width": "50px",
-                                            "height": "8px",
-                                            "vertical-align": "middle",
-                                            "font-size": 15,
-                                        },
-                                    ),
+                                    children=[
+                                        html.Div(
+                                            "Marker Size:",
+                                            id="btn_sidebar_area__",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        dbc.Input(
+                                            placeholder="5",
+                                            bs_size="sm",
+                                            value=5,
+                                            id="marker_size",
+                                            style={
+                                                "position": "sticky",
+                                                "margin-left": "3px",
+                                                # "padding": "3px",
+                                                "border": "none",
+                                                "display": "inline",
+                                                "width": "10%",
+                                                "textAlign": "center",
+                                            },
+                                        ),
+                                    ],
                                     style={
+                                        "padding-top": "5px",
+                                    },
+                                    id="graph-options-4",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "Marker Symbol:",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        html.Div(
+                                            dcc.Dropdown(
+                                                id="marker_style_dropdown",
+                                                options=scatter_symbols(),
+                                                value="circle",
+                                                style={
+                                                    "width": "100px",
+                                                    "height": "8px",
+                                                    "vertical-align": "middle",
+                                                    "font-size": 10,
+                                                },
+                                            ),
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "5px",
+                                                "margin-top": "3px",
+                                                "background": "",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "5px",
+                                    },
+                                    id="graph-options-5",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "Marker Color:",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        html.Div(
+                                            dbc.Input(
+                                                type="color",
+                                                id="colorpicker",
+                                                value="#000000",
+                                                style={"width": 20, "height": 20},
+                                            ),
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "5px",
+                                                "margin-top": "8px",
+                                                "background": "",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "20px",
+                                    },
+                                    id="graph-options-6",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "Opacity:",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        dbc.Input(
+                                            placeholder="1.0",
+                                            bs_size="sm",
+                                            value=1.0,
+                                            id="opacity",
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "3px",
+                                                # "padding": "3px",
+                                                "border": "none",
+                                                "display": "inline",
+                                                "width": "10%",
+                                                "textAlign": "center",
+                                                "margin-top": "11px",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "5px",
+                                    },
+                                    id="graph-options-7",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "Marker Border Width:",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        dbc.Input(
+                                            placeholder="0",
+                                            bs_size="sm",
+                                            value=0,
+                                            id="border_width",
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "3px",
+                                                # "padding": "3px",
+                                                "border": "none",
+                                                "display": "inline",
+                                                "width": "10%",
+                                                "textAlign": "center",
+                                                "margin-top": "11px",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "5px",
+                                    },
+                                    id="graph-options-8",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "Marker Border Color:",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        html.Div(
+                                            dbc.Input(
+                                                type="color",
+                                                id="colorpicker_marker_border",
+                                                value="#000000",
+                                                style={"width": 20, "height": 20},
+                                            ),
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "5px",
+                                                "margin-top": "8px",
+                                                "background": "",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "5px",
+                                    },
+                                    id="graph-options-9",
+                                ),
+                                html.Div(
+                                    dcc.Markdown("**Conditional Formatting**"),
+                                    id="main-title_3",
+                                    style={
+                                        "color": "white",
                                         "position": "absolute",
-                                        "margin-left": "5px",
-                                        "margin-top": "3px",
-                                        "background": "",
-                                        "display": "inline",
+                                        "margin-left": "70px",
+                                        "display": "block",
+                                        "padding-top": "20px",
                                     },
                                 ),
-                                dbc.Input(
-                                    bs_size="sm",
-                                    id="conditional-value",
-                                    placeholder="condition...",
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "Change ",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        html.Div(
+                                            dcc.Dropdown(
+                                                id="conditional-change-options",
+                                                options=scatter_dropdown_options(),
+                                                value="circle",
+                                                style={
+                                                    "width": "150px",
+                                                    "height": "8px",
+                                                    "vertical-align": "middle",
+                                                    "font-size": 10,
+                                                },
+                                            ),
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "5px",
+                                                "margin-top": "3px",
+                                                "background": "",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
                                     style={
-                                        "position": "absolute",
-                                        "margin-left": "63px",
-                                        # "padding": "3px",
-                                        "border": "none",
-                                        "display": "inline",
-                                        "width": "30%",
-                                        "height": "30px",
-                                        "textAlign": "center",
-                                        "margin-top": "5px",
+                                        "padding-top": "45px",
                                     },
+                                    id="graph-options-10",
                                 ),
-                            ],
-                            style={
-                                "padding-top": "20px",
-                            },
-                            id="graph-options-12",
-                        ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "To ",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        html.Div(
+                                            id="conditional-change-to",
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "5px",
+                                                "margin-top": "3px",
+                                                "background": "",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "20px",
+                                    },
+                                    id="graph-options-13",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "Based on ",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        html.Div(
+                                            dcc.Dropdown(
+                                                id="conditional-change-columns",
+                                                options=[],
+                                                value="circle",
+                                                style={
+                                                    "width": "150px",
+                                                    "height": "8px",
+                                                    "vertical-align": "middle",
+                                                    "font-size": 10,
+                                                },
+                                            ),
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "5px",
+                                                "margin-top": "3px",
+                                                "background": "",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "20px",
+                                    },
+                                    id="graph-options-11",
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            "If values",
+                                            style={
+                                                "position": "relative",
+                                                "margin-left": "67px",
+                                                "top": "8px",
+                                                "padding": "3px",
+                                                "border": "none",
+                                                "color": "white",
+                                                "display": "inline",
+                                                "size": "10",
+                                            },
+                                        ),
+                                        html.Div(
+                                            dcc.Dropdown(
+                                                id="conditional-change-operators",
+                                                placeholder="",
+                                                options=conditional_formatting_operators(),
+                                                style={
+                                                    "width": "50px",
+                                                    "height": "8px",
+                                                    "vertical-align": "middle",
+                                                    "font-size": 15,
+                                                },
+                                            ),
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "5px",
+                                                "margin-top": "3px",
+                                                "background": "",
+                                                "display": "inline",
+                                            },
+                                        ),
+                                        dbc.Input(
+                                            bs_size="sm",
+                                            id="conditional-value",
+                                            placeholder="condition...",
+                                            style={
+                                                "position": "absolute",
+                                                "margin-left": "63px",
+                                                # "padding": "3px",
+                                                "border": "none",
+                                                "display": "inline",
+                                                "width": "30%",
+                                                "height": "30px",
+                                                "textAlign": "center",
+                                                "margin-top": "5px",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "padding-top": "20px",
+                                    },
+                                    id="graph-options-12",
+                                ),
+                                ]
+                        )
                     ],
                     style=SIDEBAR_STYLE_2,
                     id="pls",
@@ -1609,6 +1635,7 @@ options = [
 
 @app.callback(
     Output("indicator-graphic", "figure"),
+    Output('trace_dropdown','options'),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
     Input("btn_sidebar_lines", "n_clicks"),
@@ -1656,6 +1683,10 @@ def update_graph(
     dict(zip(("name", "dual"), option))
     for option in zip((yaxis_column_name, secondary_yaxis_columns), (False, True))
     ]
+    all_y_columns = []
+    all_y_columns.extend(yaxis_column_name)
+    all_y_columns.extend(secondary_yaxis_columns)
+    trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns,all_y_columns )]
 
     options_change_to = {
         "Marker Size": marker_size,
@@ -1807,7 +1838,7 @@ def update_graph(
                 marker_border_color
             )
     default_layout(fig)
-    return fig
+    return fig,trace_options
 
 
 @app.callback(
