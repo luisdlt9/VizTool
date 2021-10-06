@@ -563,6 +563,7 @@ sidebar_ = html.Div(
                                         "margin-left": "70px",
                                         "margin-top": "3px",
                                         "background": "",
+
                                         'padding-bottom':'35px'
                                        # 'z-index': '100'
                                     },
