@@ -550,7 +550,7 @@ sidebar_ = html.Div(
                                     dcc.Dropdown(
                                         id="trace_dropdown",
                                         options=[],
-                                        value="circle",
+                                        value='',
                                         placeholder='Select Trace to Edit',
                                         style={
                                             "width": "150px",
@@ -1658,6 +1658,7 @@ def clear_trace(fig,trace_name):
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown','options'),
+    Output('trace_dropdown', 'value'),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
     Input("btn_sidebar_lines", "n_clicks"),
@@ -1862,7 +1863,7 @@ def update_graph(
                 marker_border_color
             )
     default_layout(fig)
-    return fig, trace_options
+    return fig, trace_options, all_y_columns[0]
 
 
 
