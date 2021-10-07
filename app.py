@@ -135,7 +135,7 @@ def operators_change(df, operator, original_value, new_value, col, condition):
     return operator_filter(df, operator, original_value, new_value, col, condition)
 
 # fig = make_subplots(specs=[[{"secondary_y": True}]])
-
+fig = make_subplots(specs=[[{"secondary_y": True}]])
 def default_graph(
     df,
     xaxis_column_name,
@@ -147,29 +147,35 @@ def default_graph(
     marker_border_width,
     marker_border_color,
 ):
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    traces = [trace['name'] for trace in fig.data]
+    print(y_axis_dict)
     for y in y_axis_dict:
         column = y['name']
         print(f'column: {column}')
         if len(column) == 0:
             pass
         else:
-            fig.add_trace(
-                go.Scatter(
-                    x=df[xaxis_column_name[0]],
-                    y=df[column[0]],
-                    mode="markers",
-                    marker=dict(
-                        color=color,
-                        size=marker_size,
-                        opacity=opacity,
-                        line=dict(width=marker_border_width, color=marker_border_color),
-                        symbol=marker_style,
-                    ),
-                    name=column[0],
-                ),
-                secondary_y=y['dual']
-            )
+            for col in column:
+                if col in traces:
+                    pass
+                else:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=df[xaxis_column_name[0]],
+                            y=df[col],
+                            mode="markers",
+                            marker=dict(
+                                color=color,
+                                size=marker_size,
+                                opacity=opacity,
+                                line=dict(width=marker_border_width, color=marker_border_color),
+                                symbol=marker_style,
+                            ),
+                            name=col,
+                        ),
+                        secondary_y=y['dual']
+                    )
     return fig
 
 
@@ -178,7 +184,7 @@ def line_chart(
     xaxis_column_name,
     yaxis_column_name,
 ):
-    fig = go.Figure()
+    #fig = go.Figure()
     for y in yaxis_column_name:
         fig.add_trace(
             go.Scatter(x=df[xaxis_column_name[0]], y=df[y], mode="lines", name=y)
@@ -202,7 +208,7 @@ def area_chart(
     xaxis_column_name,
     yaxis_column_name,
 ):
-    fig = go.Figure()
+    #fig = go.Figure()
     for y in yaxis_column_name:
         fig.add_trace(
             go.Scatter(x=df[xaxis_column_name[0]], y=df[y], name=y, fill="tozeroy")
@@ -215,7 +221,7 @@ def box_plot(
     xaxis_column_name,
     yaxis_column_name,
 ):
-    fig = go.Figure()
+    #fig = go.Figure()
     for i in yaxis_column_name:
         if len(xaxis_column_name) > 0:
             for y in yaxis_column_name:
@@ -1646,13 +1652,29 @@ def update_trace(trace_name, component_to_update, updated_value):
         trace_component(trace_name, component_to_update, updated_value)
     )
 
-def clear_trace(fig,trace_name):
-    for i, d in enumerate(fig.data):
-        if d['name'] == trace_name:
-            print(d, i)
-            data_list = list(fig.data)
-            data_list.pop(i)
-            fig.data = data_list
+def clear_trace(trace_name):
+    # for i, d in enumerate(fig.data):
+    #     if d['name'] == trace_name:
+    #         print(d, i)
+    #         data_list = list(fig.data)
+    #         data_list.pop(i)
+    #         fig.data = data_list
+    traces = np.array([trace['name'] for trace in fig.data])
+    del_idx = list(np.where(traces == trace_name))[0]
+    keep_data = [i for j, i in enumerate(traces) if j not in del_idx]
+    new_data = [trace for trace in fig.data if trace['name'] in keep_data]
+    fig.data = new_data
+
+def keep_active_traces(active_y_columns):
+    traces = []
+    for trace in fig.data:
+        traces.append(trace['name'])
+    no_longer_active = [trace for trace in traces if trace not in active_y_columns]
+    print(f'no longer active {no_longer_active}')
+    for trace in no_longer_active:
+        clear_trace(trace)
+
+
 
 
 @app.callback(
@@ -1711,8 +1733,11 @@ def update_graph(
     all_y_columns = []
     all_y_columns.extend(yaxis_column_name)
     all_y_columns.extend(secondary_yaxis_columns)
-    trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns,all_y_columns )]
+    if len(all_y_columns) == 0:
+        keep_active_traces(all_y_columns)
 
+    trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns,all_y_columns )]
+    keep_active_traces(all_y_columns)
     options_change_to = {
         "Marker Size": marker_size,
         "Marker Symbol": marker_style,
@@ -1728,8 +1753,10 @@ def update_graph(
     print("change option dict")
     if "btn_sidebar_lines" in changed_id:
         print("line triggered")
+        clear_trace(trace)
         fig = line_chart(dff, xaxis_column_name, yaxis_column_name)
     elif "btn_sidebar_scatter" in changed_id:
+        clear_trace(trace)
         if marker_size == "":
             marker_size = 5
         if opacity == "":
