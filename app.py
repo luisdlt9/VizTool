@@ -134,6 +134,7 @@ def operator_filter(df, operator, original_value, new_value, col, condition):
 def operators_change(df, operator, original_value, new_value, col, condition):
     return operator_filter(df, operator, original_value, new_value, col, condition)
 
+# fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 def default_graph(
     df,
@@ -562,8 +563,6 @@ sidebar_ = html.Div(
                                         "position": "sticky",
                                         "margin-left": "70px",
                                         "margin-top": "3px",
-                                        "background": "",
-
                                         'padding-bottom':'35px'
                                        # 'z-index': '100'
                                     },
@@ -1634,6 +1633,28 @@ options = [
 ]
 
 
+def trace_component(trace_name, component_to_update, updated_value):
+    if component_to_update == 'Marker Symbol':
+        def update(trace):
+            trace['marker']['symbol'] = updated_value if trace.name == trace_name else ()
+
+    return update
+
+
+def update_trace(trace_name, component_to_update, updated_value):
+    fig.for_each_trace(
+        trace_component(trace_name, component_to_update, updated_value)
+    )
+
+def clear_trace(fig,trace_name):
+    for i, d in enumerate(fig.data):
+        if d['name'] == trace_name:
+            print(d, i)
+            data_list = list(fig.data)
+            data_list.pop(i)
+            fig.data = data_list
+
+
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown','options'),
@@ -1651,12 +1672,13 @@ options = [
     Input("border_width", "value"),
     Input("colorpicker_marker_border", "value"),
     Input("conditional-change-options", "value"),
-    Input({"type": f"change_to", "index": ALL}, "value"),
+    Input({"type": "change_to", "index": ALL}, "value"),
     Input("conditional-change-operators", "value"),
     Input("conditional-change-columns", "value"),
     Input("conditional-value", "value"),
     Input('dual-y-slider-container', 'n_clicks'),
-    Input('secondary-yaxis-column', 'value')
+    Input('secondary-yaxis-column', 'value'),
+    Input('trace_dropdown', 'value')
 )
 def update_graph(
     xaxis_column_name,
@@ -1678,7 +1700,8 @@ def update_graph(
     col,
     condition,
     secondary_y_clicks,
-    secondary_yaxis_columns
+    secondary_yaxis_columns,
+    trace
 ):
     y_axis_dict = [
     dict(zip(("name", "dual"), option))
@@ -1839,7 +1862,9 @@ def update_graph(
                 marker_border_color
             )
     default_layout(fig)
-    return fig,trace_options
+    return fig, trace_options
+
+
 
 
 @app.callback(
