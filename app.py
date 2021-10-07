@@ -1675,12 +1675,16 @@ def keep_active_traces(active_y_columns):
         clear_trace(trace)
 
 
+component_dict = {
+    'marker_style_dropdown':'Marker Symbol',
+    'marker_size':'Marker Size',
+    'marker_style': 'Marker Style'
 
+}
 
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown','options'),
-    Output('trace_dropdown', 'value'),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
     Input("btn_sidebar_lines", "n_clicks"),
@@ -1750,6 +1754,9 @@ def update_graph(
     print(change_to)
     dff = df.copy()
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
+    if 'marker_style_dropdown' in changed_id:
+        update_trace(trace, component_dict['marker_style_dropdown'], marker_style)
+
     print("change option dict")
     if "btn_sidebar_lines" in changed_id:
         print("line triggered")
@@ -1890,7 +1897,7 @@ def update_graph(
                 marker_border_color
             )
     default_layout(fig)
-    return fig, trace_options, all_y_columns[0]
+    return fig, trace_options
 
 
 
