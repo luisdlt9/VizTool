@@ -30,8 +30,9 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
 )
 
-
 app.css.append_css({"external_url": external_stylesheets})
+
+
 ##########################################Charts########################################################################
 
 
@@ -44,7 +45,7 @@ def scatter_symbols():
         name = raw_symbols[i + 2]
         symbols.append(raw_symbols[i])
         namestems.append(name.replace("-open", "").replace("-dot", ""))
-        namevariants.append(name[len(namestems[-1]) :])
+        namevariants.append(name[len(namestems[-1]):])
     symbols = [name + variant for name, variant in zip(namestems, namevariants)]
     return [dict(zip(("label", "value"), symbol)) for symbol in zip(symbols, symbols)]
 
@@ -74,7 +75,7 @@ def conditional_formatting_operators():
     ]
 
 
-def conditional_change_to_options(option):
+def conditional_change_to_options(option: str) -> object:
     if option in ["Marker Size", "Opacity", "Marker Border Width"]:
         children = dbc.Input(
             bs_size="sm",
@@ -110,8 +111,6 @@ def conditional_change_to_options(option):
             },
         )
         return children
-    else:
-        pass
 
 
 def operator_filter(df, operator, original_value, new_value, col, condition):
@@ -134,32 +133,29 @@ def operator_filter(df, operator, original_value, new_value, col, condition):
 def operators_change(df, operator, original_value, new_value, col, condition):
     return operator_filter(df, operator, original_value, new_value, col, condition)
 
-# fig = make_subplots(specs=[[{"secondary_y": True}]])
-fig = make_subplots(specs=[[{"secondary_y": True}]])
-def default_graph(
-    df,
-    xaxis_column_name,
-    y_axis_dict,
-    marker_size,
-    marker_style,
-    color,
-    opacity,
-    marker_border_width,
-    marker_border_color,
-):
 
+fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+
+def default_graph(
+        df,
+        xaxis_column_name,
+        y_axis_dict,
+        marker_size,
+        marker_style,
+        color,
+        opacity,
+        marker_border_width,
+        marker_border_color,
+):
     traces = [trace['name'] for trace in fig.data]
     print(y_axis_dict)
     for y in y_axis_dict:
         column = y['name']
         print(f'column: {column}')
-        if len(column) == 0:
-            pass
-        else:
+        if len(column) != 0:
             for col in column:
-                if col in traces:
-                    pass
-                else:
+                if col not in traces:
                     fig.add_trace(
                         go.Scatter(
                             x=df[xaxis_column_name[0]],
@@ -180,11 +176,11 @@ def default_graph(
 
 
 def line_chart(
-    df,
-    xaxis_column_name,
-    yaxis_column_name,
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
 ):
-    #fig = go.Figure()
+    # fig = go.Figure()
     for y in yaxis_column_name:
         fig.add_trace(
             go.Scatter(x=df[xaxis_column_name[0]], y=df[y], mode="lines", name=y)
@@ -193,9 +189,9 @@ def line_chart(
 
 
 def bar_chart(
-    df,
-    xaxis_column_name,
-    yaxis_column_name,
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
 ):
     fig = go.Figure()
     for y in yaxis_column_name:
@@ -204,11 +200,11 @@ def bar_chart(
 
 
 def area_chart(
-    df,
-    xaxis_column_name,
-    yaxis_column_name,
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
 ):
-    #fig = go.Figure()
+    # fig = go.Figure()
     for y in yaxis_column_name:
         fig.add_trace(
             go.Scatter(x=df[xaxis_column_name[0]], y=df[y], name=y, fill="tozeroy")
@@ -217,11 +213,11 @@ def area_chart(
 
 
 def box_plot(
-    df,
-    xaxis_column_name,
-    yaxis_column_name,
+        df,
+        xaxis_column_name,
+        yaxis_column_name,
 ):
-    #fig = go.Figure()
+    # fig = go.Figure()
     for i in yaxis_column_name:
         if len(xaxis_column_name) > 0:
             for y in yaxis_column_name:
@@ -383,7 +379,6 @@ graph_options_3_style = {
 }
 
 normal_side = {"top": 53, "position": "absolute", "height": "1000"}
-
 
 sidebar_ = html.Div(
     [
@@ -569,8 +564,8 @@ sidebar_ = html.Div(
                                         "position": "sticky",
                                         "margin-left": "70px",
                                         "margin-top": "3px",
-                                        'padding-bottom':'35px'
-                                       # 'z-index': '100'
+                                        'padding-bottom': '35px'
+                                        # 'z-index': '100'
                                     },
                                 ),
                                 html.Div(
@@ -1234,7 +1229,7 @@ sidebar_ = html.Div(
                                     },
                                     id="graph-options-12",
                                 ),
-                                ]
+                            ]
                         )
                     ],
                     style=SIDEBAR_STYLE_2,
@@ -1285,7 +1280,6 @@ CONTENT_STYLE2 = {
     "margin-left": "1800rem",
     "padding": "2rem 1rem",
 }
-
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
@@ -1544,19 +1538,20 @@ def parse_contents(contents, filename, date):
     )
 
 
-
 def normalize_n_clicks(n_clicks):
     if n_clicks == 0:
         return n_clicks
     else:
-        n_clicks = int(n_clicks/2)
+        n_clicks = int(n_clicks / 2)
         return n_clicks
+
 
 def boolean_n_clicks(n_clicks):
     if n_clicks % 2 == 0:
         return False
     else:
         return True
+
 
 @app.callback(
     Output("secondary-yaxis-column", "style"),
@@ -1565,10 +1560,9 @@ def boolean_n_clicks(n_clicks):
 def generate_dual_y_axis_dropdown(n_clicks):
     n_clicks = normalize_n_clicks(n_clicks)
     if n_clicks % 2 == 0:
-        return {'display':'none'}
+        return {'display': 'none'}
     else:
         return {}
-
 
 
 @app.callback(
@@ -1589,14 +1583,14 @@ def generate_open_close_menu_callback():
 
 
 def change_to_formatting(
-    marker_size,
-    marker_style,
-    color,
-    opacity,
-    marker_border_width,
-    marker_border_color,
-    change_option,
-    new_option,
+        marker_size,
+        marker_style,
+        color,
+        opacity,
+        marker_border_width,
+        marker_border_color,
+        change_option,
+        new_option,
 ):
     options_dict = {
         "marker_size": float(marker_size),
@@ -1652,6 +1646,7 @@ def update_trace(trace_name, component_to_update, updated_value):
         trace_component(trace_name, component_to_update, updated_value)
     )
 
+
 def clear_trace(trace_name):
     # for i, d in enumerate(fig.data):
     #     if d['name'] == trace_name:
@@ -1665,6 +1660,7 @@ def clear_trace(trace_name):
     new_data = [trace for trace in fig.data if trace['name'] in keep_data]
     fig.data = new_data
 
+
 def keep_active_traces(active_y_columns):
     traces = []
     for trace in fig.data:
@@ -1676,15 +1672,26 @@ def keep_active_traces(active_y_columns):
 
 
 component_dict = {
-    'marker_style_dropdown':'Marker Symbol',
-    'marker_size':'Marker Size',
+    'marker_style_dropdown': 'Marker Symbol',
+    'marker_size': 'Marker Size',
     'marker_style': 'Marker Style'
 
 }
 
+
+class Figure:
+    pass
+
+
+class Trace(Figure):
+    def __init__(self, trace_name: str, trace_type: str, ):
+        self.trace_name = trace_name
+        self.trace_type = trace_type
+
+
 @app.callback(
     Output("indicator-graphic", "figure"),
-    Output('trace_dropdown','options'),
+    Output('trace_dropdown', 'options'),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
     Input("btn_sidebar_lines", "n_clicks"),
@@ -1708,31 +1715,31 @@ component_dict = {
     Input('trace_dropdown', 'value')
 )
 def update_graph(
-    xaxis_column_name,
-    yaxis_column_name,
-    n_clicks_line,
-    n_clicks_scatter,
-    n_clicks_bar,
-    n_clicks_area,
-    n_clicks_box,
-    marker_size,
-    marker_style,
-    color,
-    opacity,
-    marker_border_width,
-    marker_border_color,
-    change_option,
-    change_to,
-    operator,
-    col,
-    condition,
-    secondary_y_clicks,
-    secondary_yaxis_columns,
-    trace
+        xaxis_column_name,
+        yaxis_column_name,
+        n_clicks_line,
+        n_clicks_scatter,
+        n_clicks_bar,
+        n_clicks_area,
+        n_clicks_box,
+        marker_size,
+        marker_style,
+        color,
+        opacity,
+        marker_border_width,
+        marker_border_color,
+        change_option,
+        change_to,
+        operator,
+        col,
+        condition,
+        secondary_y_clicks,
+        secondary_yaxis_columns,
+        trace
 ):
     y_axis_dict = [
-    dict(zip(("name", "dual"), option))
-    for option in zip((yaxis_column_name, secondary_yaxis_columns), (False, True))
+        dict(zip(("name", "dual"), option))
+        for option in zip((yaxis_column_name, secondary_yaxis_columns), (False, True))
     ]
     all_y_columns = []
     all_y_columns.extend(yaxis_column_name)
@@ -1740,7 +1747,7 @@ def update_graph(
     if len(all_y_columns) == 0:
         keep_active_traces(all_y_columns)
 
-    trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns,all_y_columns )]
+    trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns, all_y_columns)]
     keep_active_traces(all_y_columns)
     options_change_to = {
         "Marker Size": marker_size,
@@ -1771,10 +1778,10 @@ def update_graph(
         if marker_border_width == "":
             marker_border_width = 0
         if (
-            len(change_to) > 0
-            and len(operator) > 0
-            and len(col) > 0
-            and len(condition) > 0
+                len(change_to) > 0
+                and len(operator) > 0
+                and len(col) > 0
+                and len(condition) > 0
         ):
 
             new_option = operators_change(
@@ -1839,10 +1846,10 @@ def update_graph(
         if marker_border_width == "":
             marker_border_width = 0
         if (
-            len(change_to) > 0
-            and len(operator) > 0
-            and len(col) > 0
-            and len(condition) > 0
+                len(change_to) > 0
+                and len(operator) > 0
+                and len(col) > 0
+                and len(condition) > 0
         ):
             new_option = operators_change(
                 dff,
@@ -1900,8 +1907,6 @@ def update_graph(
     return fig, trace_options
 
 
-
-
 @app.callback(
     Output("conditional-change-columns", "options"),
     Input("output-data-upload", "children"),
@@ -1938,7 +1943,7 @@ def split_filter_part(filter_part):
         for operator in operator_type:
             if operator in filter_part:
                 name_part, value_part = filter_part.split(operator, 1)
-                name = name_part[name_part.find("{") + 1 : name_part.rfind("}")]
+                name = name_part[name_part.find("{") + 1: name_part.rfind("}")]
 
                 value_part = value_part.strip()
                 v0 = value_part[0]
@@ -1978,7 +1983,6 @@ operators = [
     Input("table-sorting-filtering", "filter_query"),
 )
 def update_table(page_current, page_size, sort_by, filter):
-
     filtering_expressions = filter.split(" && ")
     dff = df.copy()
     for filter_part in filtering_expressions:
@@ -2012,7 +2016,7 @@ def update_table(page_current, page_size, sort_by, filter):
         for row in dff.to_dict("records")
     ]
 
-    return dff.iloc[page * size : (page + 1) * size].to_dict("records"), tooltip_data
+    return dff.iloc[page * size: (page + 1) * size].to_dict("records"), tooltip_data
 
 
 ##########################################Table filtering
