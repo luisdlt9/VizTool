@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 import dash
 import dash_bootstrap_components as dbc
@@ -24,6 +24,7 @@ from plotly.validators.scatter.marker import SymbolValidator
 import numpy as np
 import operator as op
 from plotly.subplots import make_subplots
+import plotly
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -34,6 +35,162 @@ app.css.append_css({"external_url": external_stylesheets})
 
 
 ##########################################Charts########################################################################
+
+
+class Graph:
+
+    def __init__(self, df: pd.DataFrame()):
+        self.df = df
+        self.traces = []
+        self.fig = make_subplots(specs=[[{"secondary_y": True}]])
+        self.traces_dict = {}
+
+    def get_traces(self) -> list:
+        return [trace['name'] for trace in self.fig.data]
+
+    def add_trace(self, trace_name):
+        pass
+
+    def delete_trace(self, trace_name):
+        current_traces = np.array(self.get_traces())
+        del_idx = list(np.where(current_traces == trace_name))[0]
+        keep_data = [i for j, i in enumerate(current_traces) if j not in del_idx]
+        new_data = [trace for trace in self.fig.data if trace['name'] in keep_data]
+        self.fig.data = new_data
+
+    def keep_active_traces(self, active_y_columns):
+        traces = self.get_traces()
+        no_longer_active = [trace for trace in traces if trace not in active_y_columns]
+        for trace in no_longer_active:
+            self.delete_trace(trace)
+
+    def update_trace(self, trace_name):
+        pass
+
+
+class Trace(Graph):
+    def __init__(self, trace_name: str, trace_type: str):
+        super().__init__(df)
+        self.trace_name = trace_name
+        self.trace_type = trace_type
+
+
+class Scatter(Trace):
+    """Represents a Scatter Graph trace."""
+
+    def __init__(self, x_axis_column_name: str, y_axis_dict: dict, trace_name: str,
+                 trace_type: str = 'Scatter') -> object:
+        super().__init__(trace_name, trace_type)
+        self.x_axis_column_name = x_axis_column_name
+        self.y_axis_dict = y_axis_dict
+        self.marker_symbol = 'circle'
+        self.marker_color = 'black'
+        self.marker_size = 5.0
+        self.border_width = 0.0
+        self.border_color = 'black'
+        self.opacity = 1.0
+
+    def add_trace(self):
+        traces = super().get_traces()
+        column = self.y_axis_dict['name']
+        if column not in traces:
+            print('titties')
+            self.fig.add_trace(
+                go.Scatter(
+                    x=self.df[self.x_axis_column_name],
+                    y=self.df[column],
+                    mode="markers",
+                    marker=dict(
+                        color=self.marker_color,
+                        size=self.marker_size,
+                        opacity=self.opacity,
+                        line=dict(width=self.border_width, color=self.border_color),
+                        symbol=self.marker_symbol,
+                    ),
+                    name=column,
+                ),
+                secondary_y=self.y_axis_dict['dual']
+            )
+
+
+class Line(Trace):
+    """Represents a Scatter Graph trace."""
+
+    def __init__(self, x_axis_column_name: str, y_axis_dict: dict, trace_name: str,
+                 trace_type: str = 'Scatter') -> object:
+        super().__init__(trace_name, trace_type)
+        self.x_axis_column_name = x_axis_column_name
+        self.y_axis_dict = y_axis_dict
+        self.marker_symbol = 'circle'
+        self.line_color = 'black'
+        self.width = 5.0
+        self.border_width = 0.0
+        self.border_color = 'black'
+        self.opacity = 1.0
+        self.mode = 'lines'
+        self.dash = None
+        self.connectgaps = True
+
+    def add_trace(self):
+        traces = super().get_traces()
+        column = self.y_axis_dict['name']
+        if column not in traces:
+            self.fig.add_trace(
+                go.Scatter(
+                    x=self.df[self.x_axis_column_name],
+                    y=self.df[column],
+                    mode=self.mode,
+                    connectgaps=self.connectgaps,
+                    opacity=self.opacity,
+                    line=dict(
+                        color=self.line_color,
+                        width=self.width,
+                        dash=self.dash,
+                    ),
+                    marker=dict(symbol=self.marker_symbol),
+                    name=column,
+                ),
+                secondary_y=self.y_axis_dict['dual']
+            )
+
+def default_graph(
+        df,
+        xaxis_column_name,
+        y_axis_dict,
+        marker_size,
+        marker_style,
+        color,
+        opacity,
+        marker_border_width,
+        marker_border_color,
+):
+    traces = [trace['name'] for trace in fig.data]
+    print(y_axis_dict)
+    for y in y_axis_dict:
+        column = y['name']
+        print(f'column: {column}')
+        if len(column) != 0:
+            for col in column:
+                if col not in traces:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=df[xaxis_column_name[0]],
+                            y=df[col],
+                            mode="markers",
+                            marker=dict(
+                                color=color,
+                                size=marker_size,
+                                opacity=opacity,
+                                line=dict(width=marker_border_width, color=marker_border_color),
+                                symbol=marker_style,
+                            ),
+                            name=col,
+                        ),
+                        secondary_y=y['dual']
+                    )
+    return fig
+
+
 
 
 def scatter_symbols():
@@ -1404,20 +1561,23 @@ def render_page_content(pathname):
 
 
 ############################################################################
-
+g = ''
 
 def parse_contents(contents, filename, date):
     content_type, content_string = contents.split(",")
 
     decoded = base64.b64decode(content_string)
     global df
+    global g
     try:
         if "csv" in filename:
             # Assume that the user uploaded a CSV file
             df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
+            g = Graph(df)
         elif "xls" in filename:
             # Assume that the user uploaded an excel file
             df = pd.read_excel(io.BytesIO(decoded))
+            g = Graph(df)
     except Exception as e:
         print(e)
         return html.Div(["There was an error processing this file."])
@@ -1662,9 +1822,7 @@ def clear_trace(trace_name):
 
 
 def keep_active_traces(active_y_columns):
-    traces = []
-    for trace in fig.data:
-        traces.append(trace['name'])
+    traces = [trace['name'] for trace in fig.data]
     no_longer_active = [trace for trace in traces if trace not in active_y_columns]
     print(f'no longer active {no_longer_active}')
     for trace in no_longer_active:
@@ -1678,15 +1836,6 @@ component_dict = {
 
 }
 
-
-class Figure:
-    pass
-
-
-class Trace(Figure):
-    def __init__(self, trace_name: str, trace_type: str, ):
-        self.trace_name = trace_name
-        self.trace_type = trace_type
 
 
 @app.callback(
@@ -1741,10 +1890,9 @@ def update_graph(
         dict(zip(("name", "dual"), option))
         for option in zip((yaxis_column_name, secondary_yaxis_columns), (False, True))
     ]
-    all_y_columns = []
-    all_y_columns.extend(yaxis_column_name)
+    all_y_columns = list(yaxis_column_name)
     all_y_columns.extend(secondary_yaxis_columns)
-    if len(all_y_columns) == 0:
+    if not all_y_columns:
         keep_active_traces(all_y_columns)
 
     trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns, all_y_columns)]
@@ -1760,11 +1908,48 @@ def update_graph(
     print(change_option)
     print(change_to)
     dff = df.copy()
+
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
+
+
+
+    ####################################################################################################################
+                                            # Normal Y
+    if 'yaxis-column' in changed_id and len(xaxis_column_name) > 0:
+        g.keep_active_traces(yaxis_column_name)
+        for y in yaxis_column_name:
+            if y not in g.get_traces():
+                scatter = Scatter(xaxis_column_name[0], {'name': y, 'dual': False}, y)
+                scatter.add_trace()
+                g.fig.add_trace(scatter.fig.data[0])
+                                            # Dual Y
+    if 'secondary-yaxis-column' in changed_id and len(xaxis_column_name) > 0:
+        g.keep_active_traces(yaxis_column_name)
+        for y in secondary_yaxis_columns:
+            if y not in g.get_traces():
+                scatter = Scatter(xaxis_column_name[0], {'name': y, 'dual': True}, y)
+                scatter.add_trace()
+                g.fig.add_trace(scatter.fig.data[0])
+    ####################################################################################################################
+
+
+
+    ####################################################################################################################
+                                             # Edit Traces (no conditional)
+
+    if changed_id in ['marker_size', 'marker_style_dropdown', 'colorpicker', 'opacity', 'border_width', 'colorpicker_marker_border'] and trace != '':
+        pass
+
+
+    ####################################################################################################################
+
+
+
+
     if 'marker_style_dropdown' in changed_id:
         update_trace(trace, component_dict['marker_style_dropdown'], marker_style)
 
-    print("change option dict")
+    #print("change option dict")
     if "btn_sidebar_lines" in changed_id:
         print("line triggered")
         clear_trace(trace)
@@ -1783,7 +1968,6 @@ def update_graph(
                 and len(col) > 0
                 and len(condition) > 0
         ):
-
             new_option = operators_change(
                 dff,
                 operator,
@@ -1809,29 +1993,17 @@ def update_graph(
                 change_option,
                 new_option,
             )
-            fig = default_graph(
-                dff,
-                xaxis_column_name,
-                y_axis_dict,
-                float(marker_size),
-                marker_style,
-                color,
-                float(opacity),
-                float(marker_border_width),
-                marker_border_color,
-            )
-        else:
-            fig = default_graph(
-                dff,
-                xaxis_column_name,
-                y_axis_dict,
-                float(marker_size),
-                marker_style,
-                color,
-                float(opacity),
-                float(marker_border_width),
-                marker_border_color,
-            )
+        fig = default_graph(
+            dff,
+            xaxis_column_name,
+            y_axis_dict,
+            float(marker_size),
+            marker_style,
+            color,
+            float(opacity),
+            float(marker_border_width),
+            marker_border_color,
+        )
     elif "btn_sidebar_bar" in changed_id:
         fig = bar_chart(dff, xaxis_column_name, yaxis_column_name)
     elif "btn_sidebar_area" in changed_id:
@@ -1839,72 +2011,84 @@ def update_graph(
     elif "btn_sidebar_box" in changed_id:
         fig = box_plot(dff, xaxis_column_name, yaxis_column_name)
     else:
-        if marker_size == "":
-            marker_size = 5
-        if opacity == "":
-            opacity = 1.0
-        if marker_border_width == "":
-            marker_border_width = 0
-        if (
-                len(change_to) > 0
-                and len(operator) > 0
-                and len(col) > 0
-                and len(condition) > 0
-        ):
-            new_option = operators_change(
-                dff,
-                operator,
-                options_change_to[change_option],
-                change_to[0],
-                col,
-                condition,
-            )
-            print("new_option")
-            print(new_option)
-            print(options_change_to[change_option])
-            (
-                marker_size,
-                marker_style,
-                color,
-                opacity,
-                marker_border_width,
-                marker_border_color,
-            ) = change_to_formatting(
-                marker_size,
-                marker_style,
-                color,
-                opacity,
-                marker_border_width,
-                marker_border_color,
-                change_option,
-                new_option,
-            )
+        print(f'testing yaxisdict {y_axis_dict}')
+        for ys in y_axis_dict:
 
-            fig = default_graph(
-                dff,
-                xaxis_column_name,
-                y_axis_dict,
-                marker_size,
-                marker_style,
-                color,
-                opacity,
-                float(marker_border_width),
-                marker_border_color
-            )
-        else:
-            fig = default_graph(
-                dff,
-                xaxis_column_name,
-                y_axis_dict,
-                float(marker_size),
-                marker_style,
-                color,
-                float(opacity),
-                float(marker_border_width),
-                marker_border_color
-            )
-    default_layout(fig)
-    return fig, trace_options
+            for y in ys['name']:
+                if len(y) > 0 and y == trace:
+                    if len(ys['name']) <= 1:
+                        trace = ''
+                    scatter = Scatter(xaxis_column_name[0], trace, {'name':y, 'dual':ys['dual']})
+                    g.fig.add_trace(scatter.fig.data[0])
+                # print(f'testing the y dict {y}')
+                # print(f'testing trace {trace}')
+                # print(f'testing x axis {xaxis_column_name}')
+        # if marker_size == "":
+        #     marker_size = 5
+        # if opacity == "":
+        #     opacity = 1.0
+        # if marker_border_width == "":
+        #     marker_border_width = 0
+        # if (
+        #     len(change_to) > 0
+        #     and len(operator) > 0
+        #     and len(col) > 0
+        #     and len(condition) > 0
+        # ):
+        #     new_option = operators_change(
+        #         dff,
+        #         operator,
+        #         options_change_to[change_option],
+        #         change_to[0],
+        #         col,
+        #         condition,
+        #     )
+        #     print("new_option")
+        #     print(new_option)
+        #     print(options_change_to[change_option])
+        #     (
+        #         marker_size,
+        #         marker_style,
+        #         color,
+        #         opacity,
+        #         marker_border_width,
+        #         marker_border_color,
+        #     ) = change_to_formatting(
+        #         marker_size,
+        #         marker_style,
+        #         color,
+        #         opacity,
+        #         marker_border_width,
+        #         marker_border_color,
+        #         change_option,
+        #         new_option,
+        #     )
+        #
+        #     fig = default_graph(
+        #         dff,
+        #         xaxis_column_name,
+        #         y_axis_dict,
+        #         marker_size,
+        #         marker_style,
+        #         color,
+        #         opacity,
+        #         float(marker_border_width),
+        #         marker_border_color
+        #     )
+        # else:
+        #     fig = default_graph(
+        #         dff,
+        #         xaxis_column_name,
+        #         y_axis_dict,
+        #         float(marker_size),
+        #         marker_style,
+        #         color,
+        #         float(opacity),
+        #         float(marker_border_width),
+        #         marker_border_color
+        #     )
+    #default_layout(fig)
+    return g.fig, trace_options
 
 
 @app.callback(
