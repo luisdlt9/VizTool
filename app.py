@@ -25,6 +25,7 @@ import numpy as np
 import operator as op
 from plotly.subplots import make_subplots
 import plotly
+from dash.exceptions import PreventUpdate
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -58,7 +59,7 @@ class Graph:
         del_idx = list(np.where(current_traces == trace_name))[0]
         keep_data = [i for j, i in enumerate(current_traces) if j not in del_idx]
         new_data = [trace for trace in self.fig.data if trace["name"] in keep_data]
-       # print(f'new data {new_data}')
+        # print(f'new data {new_data}')
         self.fig.data = new_data
         # if not update:
         #      del self.traces_dict[trace_name]
@@ -250,6 +251,7 @@ def conditional_change_to_options(option: str) -> object:
         children = dbc.Input(
             bs_size="sm",
             id={"type": f"change_to", "index": option},
+            #value='',
             style={
                 "position": "sticky",
                 "margin-left": "3px",
@@ -273,6 +275,7 @@ def conditional_change_to_options(option: str) -> object:
         children = dcc.Dropdown(
             id={"type": f"change_to", "index": option},
             options=scatter_symbols(),
+            #value='',
             style={
                 "width": "100px",
                 "height": "8px",
@@ -283,21 +286,31 @@ def conditional_change_to_options(option: str) -> object:
         return children
 
 
+
 def operator_filter(df, operator, original_value, new_value, col, condition):
-    condition = float(condition)
-    if new_value[0].isnumeric():
-        new_value = float(new_value)
-    print(new_value)
-    print(type(new_value))
-    ops = {
-        ">": op.gt(df[col], condition),
-        "<": op.lt(df[col], condition),
-        ">=": op.ge(df[col], condition),
-        "<=": op.le(df[col], condition),
-        "==": op.eq(df[col], condition),
-        "!=": op.ne(df[col], condition),
-    }
-    return np.where(ops[operator], new_value, original_value)
+    if (
+        condition != []
+        and new_value != []
+        and col != []
+        and condition not in ['', None]
+    ):
+        if condition[0].isnumeric():
+            condition = float(condition)
+        if new_value  not in [None, ''] and new_value[0].isnumeric():
+            new_value = float(new_value)
+        print(new_value)
+        print(type(new_value))
+        ops = {
+            ">": op.gt(df[col], condition),
+            "<": op.lt(df[col], condition),
+            ">=": op.ge(df[col], condition),
+            "<=": op.le(df[col], condition),
+            "==": op.eq(df[col], condition),
+            "!=": op.ne(df[col], condition),
+        }
+        return np.where(ops[operator], new_value, original_value)
+    else:
+        return original_value
 
 
 def operators_change(df, operator, original_value, new_value, col, condition):
@@ -1917,7 +1930,7 @@ sidebar_ = html.Div(
                                                     dcc.Dropdown(
                                                         id="conditional-change-options",
                                                         options=scatter_dropdown_options(),
-                                                       # value="circle",
+                                                        value="",
                                                         style={
                                                             "width": "150px",
                                                             "height": "8px",
@@ -1989,7 +2002,8 @@ sidebar_ = html.Div(
                                                     dcc.Dropdown(
                                                         id="conditional-change-columns",
                                                         options=[],
-                                                        value="circle",
+                                                        value='',
+                                                        #value="circle",
                                                         style={
                                                             "width": "150px",
                                                             "height": "8px",
@@ -2030,6 +2044,7 @@ sidebar_ = html.Div(
                                                     dcc.Dropdown(
                                                         id="conditional-change-operators",
                                                         placeholder="",
+                                                        value='',
                                                         options=conditional_formatting_operators(),
                                                         style={
                                                             "width": "50px",
@@ -2049,6 +2064,7 @@ sidebar_ = html.Div(
                                                 dbc.Input(
                                                     bs_size="sm",
                                                     id="conditional-value",
+                                                    value='',
                                                     placeholder="condition...",
                                                     style={
                                                         "position": "absolute",
@@ -2528,13 +2544,9 @@ def update_cycle(active):
     g.fig.add_trace(active.fig.data[0])
 
 
-
-
-
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown', 'options'),
-    Output('panel_data_container', 'value'),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
     Input(f"btn_sidebar_lines", "n_clicks"),
@@ -2603,81 +2615,109 @@ def update_graph(
     dff = df.copy()
 
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
-    #print(f'prints all_y_columns {all_y_columns}')
+    # print(f'prints all_y_columns {all_y_columns}')
     # g.keep_active_traces(all_y_columns)
+
+
 
     ####################################################################################################################
     # Edit Traces (no conditional)
 
     if trace not in ['', None]:
         active = g.traces_dict[trace]['trace']
+        settings = g.traces_dict[trace]['settings']
         if 'marker_style_dropdown' in changed_id:
             g.delete_trace(trace, True)
             active.marker_symbol = marker_style
             update_cycle(active)
+            settings['Marker Symbol'] = marker_style
         elif 'colorpicker' in changed_id:
             g.delete_trace(trace, True)
             active.marker_color = color
             update_cycle(active)
+            settings['Marker Color'] = color
         elif 'marker_size' in changed_id:
             g.delete_trace(trace, True)
             active.marker_size = float(marker_size)
             update_cycle(active)
+            settings['Marker Size'] = float(marker_size)
         elif 'opacity' in changed_id:
             g.delete_trace(trace, True)
             active.opacity = float(opacity)
             update_cycle(active)
+            settings['Opacity'] = float(opacity)
         elif 'border_width' in changed_id:
             g.delete_trace(trace, True)
             active.border_width = float(marker_border_width)
             update_cycle(active)
+            settings['Marker Border Width'] = float(marker_border_width)
         elif 'colorpicker_marker_border' in changed_id:
             g.delete_trace(trace, True)
             active.border_color = marker_border_color
             update_cycle(active)
+            settings['Marker Border Width'] = marker_border_color
+
 
     ####################################################################################################################
 
     ####################################################################################################################
+    if trace not in ['', None]:
+        active = g.traces_dict[trace]['trace']
+        #print(f'active.marker_color {active.marker_color}')
     # Conditional Editing
-    if (
-            len(change_to) > 0
-            and len(operator) > 0
-            and len(col) > 0
-            and len(condition) > 0
-    ) and (trace != ''):
+    if operator not in [None,''] and col not in [None, ''] and condition not in ['',None] and trace not in  ['', None] and change_to not in [None, []]:
+        print(f'change_to {change_to}')
         active = g.traces_dict[trace]['trace']
         if change_option == 'Marker Symbol':
             g.delete_trace(trace, True)
-            active.marker_symbol = operators_change(dff, operator, marker_style, change_to[0], trace, condition)
+            active.marker_symbol = operators_change(dff, operator, marker_style, change_to[0], col, condition)
             update_cycle(active)
         elif change_option == 'Marker Color':
             g.delete_trace(trace, True)
-            active.marker_color = operators_change(dff, operator, color, change_to[0], trace, condition)
+            active.marker_color = operators_change(dff, operator, color, change_to[0], col, condition)
             update_cycle(active)
         elif change_option == 'Marker Size':
             g.delete_trace(trace, True)
-            active.marker_size = operators_change(dff, operator, color, change_to[0], trace, condition)
+            active.marker_size = operators_change(dff, operator, color, change_to[0], col, condition)
             update_cycle(active)
         elif change_option == 'Opacity':
             g.delete_trace(trace, True)
-            active.opacity = operators_change(dff, operator, color, change_to[0], trace, condition)
+            active.opacity = operators_change(dff, operator, color, change_to[0], col, condition)
             update_cycle(active)
         elif change_option == 'Marker Border Width':
             g.delete_trace(trace, True)
-            active.border_width = operators_change(dff, operator, color, change_to[0], trace, condition)
+            active.border_width = operators_change(dff, operator, color, change_to[0], col, condition)
             update_cycle(active)
         elif change_option == 'Marker Border Color':
             g.delete_trace(trace, True)
-            active.border_color = operators_change(dff, operator, color, change_to[0], trace, condition)
+            active.border_color = operators_change(dff, operator, color, change_to[0], col, condition)
             update_cycle(active)
+
+        for y in all_y_columns:
+            if trace not in ['', None] and y not in g.get_traces():
+                new_trace = y
+            else:
+                new_trace = None
+
+            print(f'new_trace {new_trace}')
+
+            if trace not in ['', None, new_trace]:
+                g.traces_dict[trace]['settings'] = {'Marker Size': float(marker_size),
+                                                    'Marker Symbol': marker_style,
+                                                    'Marker Color': color,
+                                                    'Opacity': float(opacity),
+                                                    'Marker Border Width': float(
+                                                        marker_border_width),
+                                                    'Marker Border Color': marker_border_color,
+                                                    'Change': change_option,
+                                                    'To': change_to,
+                                                    'Column': col,
+                                                    'Operator': operator,
+                                                    'Condition': condition
+                                                    }
 
     ####################################################################################################################
 
-    # if 'marker_style_dropdown' in changed_id:
-    #     update_trace(trace, component_dict['marker_style_dropdown'], marker_style)
-
-    # print("change option dict")
     if "btn_sidebar_lines" in changed_id:
         print("line triggered")
         clear_trace(trace)
@@ -2742,26 +2782,27 @@ def update_graph(
 
         ####################################################################################################################
         # Normal Y
-        if ('yaxis-column' in changed_id) and (len(xaxis_column_name) > 0):
+        if 'yaxis-column' in changed_id and len(xaxis_column_name) > 0:
             g.keep_active_traces(yaxis_column_name)
             for y in yaxis_column_name:
                 if y not in g.get_traces():
                     scatter = Scatter(xaxis_column_name[0], {'name': y, 'dual': False}, y)
                     scatter.add_trace()
                     g.fig.add_trace(scatter.fig.data[0])
-                    g.traces_dict[scatter.trace_name] = {'trace':scatter, 'settings': {'Marker Size': float(marker_size),
-                                                                                       'Marker Symbol': marker_style,
-                                                                                       'Marker Color': color,
-                                                                                       'Opacity':float(opacity),
-                                                                                       'Marker Border Width':float(marker_border_width),
-                                                                                       'Marker Border Color': marker_border_color,
-                                                                                       'Change': change_option,
-                                                                                       'To': change_to,
-                                                                                       'Column': col,
-                                                                                       'Operator': operator,
-                                                                                       'Condition': condition
+                    g.traces_dict[scatter.trace_name] = {'trace': scatter,
+                                                         'settings': {'Marker Size': scatter.marker_size,
+                                                                      'Marker Symbol': scatter.marker_symbol,
+                                                                      'Marker Color': scatter.marker_color,
+                                                                      'Opacity': scatter.opacity,
+                                                                      'Marker Border Width': scatter.border_width,
+                                                                      'Marker Border Color': scatter.border_color,
+                                                                      'Change': '',
+                                                                      'To': [],
+                                                                      'Column':'',
+                                                                      'Operator': '',
+                                                                      'Condition': ''
 
-                                                                                       }
+                                                                      }
                                                          }
             # print(f'testing g.get_traces() {g.get_traces()}')
             # Dual Y
@@ -2772,19 +2813,20 @@ def update_graph(
                     scatter = Scatter(xaxis_column_name[0], {'name': y, 'dual': True}, y)
                     scatter.add_trace()
                     g.fig.add_trace(scatter.fig.data[0])
-                    g.traces_dict[scatter.trace_name] = {'trace':scatter, 'settings': {'Marker Size': float(marker_size),
-                                                                                       'Marker Symbol': marker_style,
-                                                                                       'Marker Color': color,
-                                                                                       'Opacity':float(opacity),
-                                                                                       'Marker Border Width':float(marker_border_width),
-                                                                                       'Marker Border Color': marker_border_color,
-                                                                                       'Change': change_option,
-                                                                                       'To': change_to,
-                                                                                       'Column': col,
-                                                                                       'Operator': operator,
-                                                                                       'Condition': condition
+                    g.traces_dict[scatter.trace_name] = {'trace': scatter,
+                                                         'settings': {'Marker Size': float(marker_size),
+                                                                      'Marker Symbol': marker_style,
+                                                                      'Marker Color': color,
+                                                                      'Opacity': float(opacity),
+                                                                      'Marker Border Width': float(marker_border_width),
+                                                                      'Marker Border Color': marker_border_color,
+                                                                      'Change': change_option,
+                                                                      'To': change_to,
+                                                                      'Column': col,
+                                                                      'Operator': operator,
+                                                                      'Condition': condition
 
-                                                                                       }
+                                                                      }
                                                          }
         ####################################################################################################################
 
@@ -2858,32 +2900,15 @@ def update_graph(
         #     )
     # default_layout(fig)
 
-
     ### THIS IS WHERE I LEFT OFF
     #
-    if trace not in ['', None]:
-        g.traces_dict[trace]['settings'] = {'Marker Size': float(marker_size),
-                                            'Marker Symbol': marker_style,
-                                            'Marker Color': color,
-                                            'Opacity': float(opacity),
-                                            'Marker Border Width': float(
-                                                marker_border_width),
-                                            'Marker Border Color': marker_border_color,
-                                            'Change':change_option,
-                                            'To':change_to,
-                                            'Column': col,
-                                            'Operator': operator,
-                                            'Condition':condition
-                                            }
-
-    print(f'g traces_dict {g.traces_dict}')
-    print(f'g traces_dict type {type(g.traces_dict)}')
-    print(f'fig {g.fig}')
-    return g.fig, trace_options, ''
 
 
 
-
+   # print(f'g traces_dict {g.traces_dict}')
+   # print(f'g traces_dict type {type(g.traces_dict)}')
+   # print(f'fig {g.fig}')
+    return g.fig, trace_options
 
 
 # @app.callback(
@@ -2898,26 +2923,46 @@ def update_graph(
 #         return scatter_panel
 
 @app.callback(
-    Output(f"marker_size", "value"),
-    Output(f"marker_style_dropdown", "value"),
-    Output(f"colorpicker", "value"),
-    Output(f"opacity", "value"),
-    Output(f"border_width", "value"),
-    Output(f"colorpicker_marker_border", "value"),
-    Output(f"conditional-change-options", "value"),
-    Output({"type": "change_to", "index": ALL}, "value"),
-    Output(f"conditional-change-operators", "value"),
-    Output(f"conditional-change-columns", "value"),
-    Output(f"conditional-value", "value"),
-    Input(f"trace_dropdown", 'value'),
-    State('panel_data_container', 'value'),
+    [
+        Output(f"marker_size", "value"),
+        Output(f"marker_style_dropdown", "value"),
+        Output(f"colorpicker", "value"),
+        Output(f"opacity", "value"),
+        Output(f"border_width", "value"),
+        Output(f"colorpicker_marker_border", "value"),
+        Output(f"conditional-change-options", "value"),
+        #Output({"type": "change_to", "index": ALL}, "value"),
+        Output(f"conditional-change-operators", "value"),
+        Output(f"conditional-change-columns", "value"),
+        Output(f"conditional-value", "value"),
+    ],
+    Input(f"trace_dropdown", 'value')
 )
-def update_panel_data(trace,value):
-        if trace not in ['', None]:
-            settings = g.traces_dict[trace]['settings']
-            return settings['Marker Size'],  settings['Marker Symbol'], settings['Marker Color'], settings['Opacity'], settings['Marker Border Width'], settings['Marker Border Color'], settings['Change'], settings['To'], settings['Operator'], settings['Column'], settings['Condition']
+def update_panel_data(trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    settings = g.traces_dict[trace]['settings']
+    return [settings['Marker Size'], settings['Marker Symbol'], settings['Marker Color'], settings['Opacity'], settings[
+        'Marker Border Width'], settings['Marker Border Color'], settings['Change'], settings[
+               'Operator'], settings['Column'], settings['Condition']]
 
 
+
+@app.callback(
+    Output({"type": "change_to", "index": ALL}, "value"),
+    Input(f"trace_dropdown", 'value')
+)
+def update_change_to(trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    settings = g.traces_dict[trace]['settings']
+    # print(f'trace check {trace}')
+    # print(f'trace To {settings["To"]}')
+    if len(settings['To']) == 0:
+        return dash.no_update
+    else:
+        # print(f'settings[To] {settings["To"]}')
+        return settings['To']
 
 
 @app.callback(
@@ -2949,6 +2994,8 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)
         ]
         return children, {"display": "none"}
+    else:
+        raise PreventUpdate
 
 
 def split_filter_part(filter_part):
