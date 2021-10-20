@@ -137,7 +137,7 @@ class Line(Trace):
         self.y_axis_dict = y_axis_dict
         self.marker_symbol = "circle"
         self.line_color = "black"
-        self.width = 5.0
+        self.width = 2.0
         self.border_width = 0.0
         self.border_color = "black"
         self.opacity = 1.0
@@ -2544,6 +2544,60 @@ def update_cycle(active):
     g.fig.add_trace(active.fig.data[0])
 
 
+
+def serve_scatter(x_axis_column, y_axis_columns, dual=False):
+    g.keep_active_traces(y_axis_columns)
+    for y in y_axis_columns:
+        if y not in g.get_traces():
+            scatter = Scatter(x_axis_column[0], {'name': y, 'dual': dual}, y)
+            scatter.add_trace()
+            g.fig.add_trace(scatter.fig.data[0])
+            g.traces_dict[scatter.trace_name] = {'trace': scatter,
+                                                 'settings': {'Marker Size': scatter.marker_size,
+                                                              'Marker Symbol': scatter.marker_symbol,
+                                                              'Marker Color': scatter.marker_color,
+                                                              'Opacity': scatter.opacity,
+                                                              'Marker Border Width': scatter.border_width,
+                                                              'Marker Border Color': scatter.border_color,
+                                                              'Change': '',
+                                                              'To': [],
+                                                              'Column': '',
+                                                              'Operator': '',
+                                                              'Condition': ''
+
+                                                              }
+                                                 }
+
+
+def serve_line(x_axis_column, y_axis_columns, trace, dual=False):
+    g.keep_active_traces(y_axis_columns)
+    g.delete_trace(trace)
+    for y in y_axis_columns:
+        if y not in g.get_traces():
+            line = Line(x_axis_column[0], {'name': trace, 'dual': dual}, trace)
+            line.add_trace()
+            g.fig.add_trace(line.fig.data[0])
+            g.traces_dict[line.trace_name] = {'trace': line,
+                                              'settings': {'Line Width': line.width,
+                                                           'Marker Symbol': line.marker_symbol,
+                                                           'Line Color': line.line_color,
+                                                           'Opacity': line.opacity,
+                                                           'Border Width': line.border_width,
+                                                           'Border Color': line.border_color,
+                                                           'Mode': line.mode,
+                                                           'Dash': line.dash,
+                                                           'Connect Gaps': line.connectgaps,
+                                                           'Change': '',
+                                                           'To': [],
+                                                           'Column': '',
+                                                           'Operator': '',
+                                                           'Condition': ''
+
+                                                           }
+                                              }
+
+
+
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown', 'options'),
@@ -2718,10 +2772,13 @@ def update_graph(
 
     ####################################################################################################################
 
-    if "btn_sidebar_lines" in changed_id:
-        print("line triggered")
-        clear_trace(trace)
-        fig = line_chart(dff, xaxis_column_name, yaxis_column_name)
+    if "btn_sidebar_lines" in changed_id and len(xaxis_column_name) > 0 and trace not in ['', None]:
+        ####################################################################################################################
+        if trace in yaxis_column_name:
+            serve_line(xaxis_column_name, all_y_columns, trace, dual=False)
+        elif trace in secondary_yaxis_columns:
+            serve_line(xaxis_column_name, all_y_columns, trace, dual=True)
+
     elif "btn_sidebar_scatter" in changed_id:
         clear_trace(trace)
         if marker_size == "":
@@ -2779,135 +2836,16 @@ def update_graph(
     elif "btn_sidebar_box" in changed_id:
         fig = box_plot(dff, xaxis_column_name, yaxis_column_name)
     else:
-
-        ####################################################################################################################
+        """When a new y column is added to the list it will automaticall serve a scatter plot."""
         # Normal Y
         if 'yaxis-column' in changed_id and len(xaxis_column_name) > 0:
-            g.keep_active_traces(yaxis_column_name)
-            for y in yaxis_column_name:
-                if y not in g.get_traces():
-                    scatter = Scatter(xaxis_column_name[0], {'name': y, 'dual': False}, y)
-                    scatter.add_trace()
-                    g.fig.add_trace(scatter.fig.data[0])
-                    g.traces_dict[scatter.trace_name] = {'trace': scatter,
-                                                         'settings': {'Marker Size': scatter.marker_size,
-                                                                      'Marker Symbol': scatter.marker_symbol,
-                                                                      'Marker Color': scatter.marker_color,
-                                                                      'Opacity': scatter.opacity,
-                                                                      'Marker Border Width': scatter.border_width,
-                                                                      'Marker Border Color': scatter.border_color,
-                                                                      'Change': '',
-                                                                      'To': [],
-                                                                      'Column':'',
-                                                                      'Operator': '',
-                                                                      'Condition': ''
+            serve_scatter(xaxis_column_name, all_y_columns, dual=False)
 
-                                                                      }
-                                                         }
-            # print(f'testing g.get_traces() {g.get_traces()}')
             # Dual Y
         if 'secondary-yaxis-column' in changed_id and len(xaxis_column_name) > 0:
-            g.keep_active_traces(yaxis_column_name)
-            for y in secondary_yaxis_columns:
-                if y not in g.get_traces():
-                    scatter = Scatter(xaxis_column_name[0], {'name': y, 'dual': True}, y)
-                    scatter.add_trace()
-                    g.fig.add_trace(scatter.fig.data[0])
-                    g.traces_dict[scatter.trace_name] = {'trace': scatter,
-                                                         'settings': {'Marker Size': float(marker_size),
-                                                                      'Marker Symbol': marker_style,
-                                                                      'Marker Color': color,
-                                                                      'Opacity': float(opacity),
-                                                                      'Marker Border Width': float(marker_border_width),
-                                                                      'Marker Border Color': marker_border_color,
-                                                                      'Change': change_option,
-                                                                      'To': change_to,
-                                                                      'Column': col,
-                                                                      'Operator': operator,
-                                                                      'Condition': condition
-
-                                                                      }
-                                                         }
-        ####################################################################################################################
-
-        # g.fig.add_trace(scatter.fig.data[0])
-        # print(f'testing the y dict {y}')
-        # print(f'testing trace {trace}')
-        # print(f'testing x axis {xaxis_column_name}')
-        # if marker_size == "":
-        #     marker_size = 5
-        # if opacity == "":
-        #     opacity = 1.0
-        # if marker_border_width == "":
-        #     marker_border_width = 0
-        # if (
-        #     len(change_to) > 0
-        #     and len(operator) > 0
-        #     and len(col) > 0
-        #     and len(condition) > 0
-        # ):
-        #     new_option = operators_change(
-        #         dff,
-        #         operator,
-        #         options_change_to[change_option],
-        #         change_to[0],
-        #         col,
-        #         condition,
-        #     )
-        #     print("new_option")
-        #     print(new_option)
-        #     print(options_change_to[change_option])
-        #     (
-        #         marker_size,
-        #         marker_style,
-        #         color,
-        #         opacity,
-        #         marker_border_width,
-        #         marker_border_color,
-        #     ) = change_to_formatting(
-        #         marker_size,
-        #         marker_style,
-        #         color,
-        #         opacity,
-        #         marker_border_width,
-        #         marker_border_color,
-        #         change_option,
-        #         new_option,
-        #     )
-        #
-        #     fig = default_graph(
-        #         dff,
-        #         xaxis_column_name,
-        #         y_axis_dict,
-        #         marker_size,
-        #         marker_style,
-        #         color,
-        #         opacity,
-        #         float(marker_border_width),
-        #         marker_border_color
-        #     )
-        # else:
-        #     fig = default_graph(
-        #         dff,
-        #         xaxis_column_name,
-        #         y_axis_dict,
-        #         float(marker_size),
-        #         marker_style,
-        #         color,
-        #         float(opacity),
-        #         float(marker_border_width),
-        #         marker_border_color
-        #     )
-    # default_layout(fig)
-
-    ### THIS IS WHERE I LEFT OFF
-    #
+            serve_scatter(xaxis_column_name, all_y_columns, dual=True)
 
 
-
-   # print(f'g traces_dict {g.traces_dict}')
-   # print(f'g traces_dict type {type(g.traces_dict)}')
-   # print(f'fig {g.fig}')
     return g.fig, trace_options
 
 
@@ -2931,7 +2869,6 @@ def update_graph(
         Output(f"border_width", "value"),
         Output(f"colorpicker_marker_border", "value"),
         Output(f"conditional-change-options", "value"),
-        #Output({"type": "change_to", "index": ALL}, "value"),
         Output(f"conditional-change-operators", "value"),
         Output(f"conditional-change-columns", "value"),
         Output(f"conditional-value", "value"),
