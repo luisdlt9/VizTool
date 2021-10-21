@@ -53,7 +53,7 @@ class Graph:
         pass
 
     def delete_trace(self, trace_name, update=False):
-        print(f'delete_trace trace name {trace_name}')
+        #print(f'delete_trace trace name {trace_name}')
         current_traces = np.array(self.get_traces())
         # print(f'delete trace current traces{current_traces}')
         del_idx = list(np.where(current_traces == trace_name))[0]
@@ -66,9 +66,9 @@ class Graph:
 
     def keep_active_traces(self, active_y_columns):
         traces = self.get_traces()
-        print(f'prints traces{traces}')
+       # print(f'prints traces{traces}')
         no_longer_active = [trace for trace in traces if trace not in active_y_columns]
-        print(f'no_longer_active {no_longer_active}')
+        #print(f'no_longer_active {no_longer_active}')
         for trace in no_longer_active:
             self.delete_trace(trace)
 
@@ -2835,15 +2835,16 @@ def update_graph(
         fig = area_chart(dff, xaxis_column_name, yaxis_column_name)
     elif "btn_sidebar_box" in changed_id:
         fig = box_plot(dff, xaxis_column_name, yaxis_column_name)
-    else:
-        """When a new y column is added to the list it will automaticall serve a scatter plot."""
-        # Normal Y
-        if 'yaxis-column' in changed_id and len(xaxis_column_name) > 0:
-            serve_scatter(xaxis_column_name, all_y_columns, dual=False)
 
-            # Dual Y
-        if 'secondary-yaxis-column' in changed_id and len(xaxis_column_name) > 0:
-            serve_scatter(xaxis_column_name, all_y_columns, dual=True)
+        # Secondary Y Axis default graph
+    elif 'secondary-yaxis-column' in changed_id and len(xaxis_column_name) > 0:
+        print('secondary y scatter')
+        serve_scatter(xaxis_column_name, all_y_columns, dual=True)
+        #Normal Y Axis default graph
+    elif 'yaxis-column' in changed_id and len(xaxis_column_name) > 0:
+        print('normal y scatter')
+        print(changed_id)
+        serve_scatter(xaxis_column_name, all_y_columns, dual=False)
 
 
     return g.fig, trace_options
