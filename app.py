@@ -130,7 +130,7 @@ class Line(Trace):
             x_axis_column_name: str,
             y_axis_dict: dict,
             trace_name: str,
-            trace_type: str = "Scatter",
+            trace_type: str = "Line",
     ) -> object:
         super().__init__(trace_name, trace_type)
         self.x_axis_column_name = x_axis_column_name
@@ -1369,7 +1369,8 @@ scatter_formatting_options = html.Div(
             id="graph-options-9",
         ),
     ],
-    id='scatter_formatting_options'
+    id='scatter_formatting_options',
+    style={}
 )
 
 line_formatting_options = html.Div(
@@ -1450,7 +1451,7 @@ line_formatting_options = html.Div(
                 ),
             ],
             style={
-                "padding-top": "20px",
+                "padding-top": "0px",
             },
         ),
         html.Div(
@@ -1492,6 +1493,47 @@ line_formatting_options = html.Div(
         html.Div(
             children=[
                 html.Div(
+                    "Mode:",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "top": "8px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                html.Div(
+                    dcc.Dropdown(
+                        id="line_mode_dropdown",
+                        options=scatter_symbols(),
+                        placeholder="lines",
+                        value="circle",
+                        style={
+                            "width": "100px",
+                            "height": "8px",
+                            "vertical-align": "middle",
+                            "font-size": 10,
+                        },
+                    ),
+                    style={
+                        "position": "absolute",
+                        "margin-left": "5px",
+                        "margin-top": "3px",
+                        "background": "",
+                        "display": "inline",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "10px",
+            },
+        ),
+        html.Div(
+            children=[
+                html.Div(
                     "Marker Symbol:",
                     style={
                         "position": "relative",
@@ -1506,7 +1548,7 @@ line_formatting_options = html.Div(
                 ),
                 html.Div(
                     dcc.Dropdown(
-                        id="marker_style_dropdown",
+                        id="line_marker_style_dropdown",
                         options=scatter_symbols(),
                         value="circle",
                         style={
@@ -1526,50 +1568,13 @@ line_formatting_options = html.Div(
                 ),
             ],
             style={
-                "padding-top": "5px",
+                "padding-top": "20px",
             },
         ),
         html.Div(
             children=[
                 html.Div(
-                    "Marker Border Width:",
-                    style={
-                        "position": "relative",
-                        "margin-left": "67px",
-                        "top": "8px",
-                        "padding": "3px",
-                        "border": "none",
-                        "color": "white",
-                        "display": "inline",
-                        "size": "10",
-                    },
-                ),
-                dbc.Input(
-                    placeholder="0",
-                    bs_size="sm",
-                    value=0,
-                    id="border_width",
-                    style={
-                        "position": "absolute",
-                        "margin-left": "3px",
-                        # "padding": "3px",
-                        "border": "none",
-                        "display": "inline",
-                        "width": "10%",
-                        "textAlign": "center",
-                        "margin-top": "11px",
-                    },
-                ),
-            ],
-            style={
-                "padding-top": "5px",
-            },
-            id="graph-options-8",
-        ),
-        html.Div(
-            children=[
-                html.Div(
-                    "Marker Border Color:",
+                    "Dash:",
                     style={
                         "position": "relative",
                         "margin-left": "67px",
@@ -1582,28 +1587,149 @@ line_formatting_options = html.Div(
                     },
                 ),
                 html.Div(
-                    dbc.Input(
-                        type="color",
-                        id="colorpicker_marker_border",
-                        value="#000000",
-                        style={"width": 20, "height": 20},
+                    dcc.Dropdown(
+                        id="line_dash_dropdown",
+                        options=scatter_symbols(),
+                        value=None,
+                        style={
+                            "width": "100px",
+                            "height": "8px",
+                            "vertical-align": "middle",
+                            "font-size": 10,
+                        },
                     ),
                     style={
                         "position": "absolute",
                         "margin-left": "5px",
-                        "margin-top": "8px",
+                        "margin-top": "3px",
                         "background": "",
                         "display": "inline",
                     },
                 ),
             ],
             style={
-                "padding-top": "5px",
+                "padding-top": "20px",
             },
-            id="graph-options-9",
         ),
+        html.Div(
+            children=[
+                html.Div(
+                    "Connect Gaps:",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "top": "8px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                html.Div(
+                    dcc.Dropdown(
+                        id="line_gaps_dash_dropdown",
+                        options=[
+                            {'label': 'True', 'value': True},
+                            {'label': 'False', 'value': False},
+                        ],
+                        value=False,
+                        style={
+                            "width": "100px",
+                            "height": "8px",
+                            "vertical-align": "middle",
+                            "font-size": 10,
+                        },
+                    ),
+                    style={
+                        "position": "absolute",
+                        "margin-left": "5px",
+                        "margin-top": "3px",
+                        "background": "",
+                        "display": "inline",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "20px",
+            },
+        ),
+        # html.Div(
+        #     children=[
+        #         html.Div(
+        #             "Marker Border Width:",
+        #             style={
+        #                 "position": "relative",
+        #                 "margin-left": "67px",
+        #                 "top": "8px",
+        #                 "padding": "3px",
+        #                 "border": "none",
+        #                 "color": "white",
+        #                 "display": "inline",
+        #                 "size": "10",
+        #             },
+        #         ),
+        #         dbc.Input(
+        #             placeholder="0",
+        #             bs_size="sm",
+        #             value=0,
+        #             id="border_width",
+        #             style={
+        #                 "position": "absolute",
+        #                 "margin-left": "3px",
+        #                 # "padding": "3px",
+        #                 "border": "none",
+        #                 "display": "inline",
+        #                 "width": "10%",
+        #                 "textAlign": "center",
+        #                 "margin-top": "11px",
+        #             },
+        #         ),
+        #     ],
+        #     style={
+        #         "padding-top": "5px",
+        #     },
+        #     id="graph-options-8",
+        # ),
+        # html.Div(
+        #     children=[
+        #         html.Div(
+        #             "Marker Border Color:",
+        #             style={
+        #                 "position": "relative",
+        #                 "margin-left": "67px",
+        #                 "top": "8px",
+        #                 "padding": "3px",
+        #                 "border": "none",
+        #                 "color": "white",
+        #                 "display": "inline",
+        #                 "size": "10",
+        #             },
+        #         ),
+        #         html.Div(
+        #             dbc.Input(
+        #                 type="color",
+        #                 id="colorpicker_marker_border",
+        #                 value="#000000",
+        #                 style={"width": 20, "height": 20},
+        #             ),
+        #             style={
+        #                 "position": "absolute",
+        #                 "margin-left": "5px",
+        #                 "margin-top": "8px",
+        #                 "background": "",
+        #                 "display": "inline",
+        #             },
+        #         ),
+        #     ],
+        #     style={
+        #         "padding-top": "5px",
+        #     },
+        #     id="graph-options-9",
+        # ),
     ],
-    id='line_formatting_options'
+    id='line_formatting_options',
+    style={'display': 'none'}
 )
 #################### Navbar#################################################################################
 navbar_ = html.Div(
@@ -2139,6 +2265,7 @@ sidebar_ = html.Div(
                                             id="graph-options-3",
                                         ),
                                         scatter_formatting_options,
+                                        line_formatting_options,
                                         html.Div(
                                             dcc.Markdown("**Conditional Formatting**"),
                                             id="main-title_3",
@@ -3081,6 +3208,9 @@ def update_graph(
         print(changed_id)
         serve_scatter(xaxis_column_name, all_y_columns, dual=False)
 
+    if trace not in ['', None]:
+        print(g.traces_dict[trace]['trace'].trace_type)
+
     return g.fig, trace_options
 
 
@@ -3094,6 +3224,36 @@ def update_graph(
 #         return panels[trace]
 #     else:
 #         return scatter_panel
+
+
+# @app.callback(
+#     Output('scatter_formatting_options', 'style'),
+#     Input('btn_sidebar_scatter', 'value'),
+#     State('trace_dropdown', 'value')
+# )
+# def serve_scatter_formatting_options(trace):
+#     if g in globals() and g.traces_dict[trace]['trace'].trace_type == "Scatter":
+#         return {}
+#     else:
+#         return {'display': 'none'}
+
+@app.callback(
+    Output('scatter_formatting_options', 'style'),
+    Output('line_formatting_options', 'style'),
+    Input('btn_sidebar_scatter', 'n_clicks'),
+    Input('btn_sidebar_lines', 'n_clicks')
+)
+def serve_graph_formatting_options(scatter_nclicks, lines_nclicks):
+    changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
+    print(f'chnaged_id {changed_id}')
+    show = {'display':"block"}
+    hide = {'display':'none'}
+    if 'btn_sidebar_lines' in changed_id:
+        return hide, show
+    elif 'btn_sidebar_scatter' in changed_id:
+        return show, hide
+    return show, hide
+
 
 @app.callback(
     [
@@ -3113,10 +3273,13 @@ def update_graph(
 def update_panel_data(trace):
     if trace in ['', None]:
         raise PreventUpdate
-    settings = g.traces_dict[trace]['settings']
-    return [settings['Marker Size'], settings['Marker Symbol'], settings['Marker Color'], settings['Opacity'], settings[
-        'Marker Border Width'], settings['Marker Border Color'], settings['Change'], settings[
-                'Operator'], settings['Column'], settings['Condition']]
+    trace_object = g.traces_dict[trace]
+    if trace_object['trace'].trace_type == "Scatter":
+        settings = trace_object['settings']
+        return [settings['Marker Size'], settings['Marker Symbol'], settings['Marker Color'], settings['Opacity'],
+                settings[
+                    'Marker Border Width'], settings['Marker Border Color'], settings['Change'], settings[
+                    'Operator'], settings['Column'], settings['Condition']]
 
 
 @app.callback(
