@@ -2416,6 +2416,9 @@ def update_graph(
         "Marker Border Width": marker_border_width,
         "Marker Border Color": marker_border_color,
     }
+    line_options = {
+
+    }
 
     dff = df.copy()
 
@@ -2497,56 +2500,15 @@ def update_graph(
         elif trace in secondary_yaxis_columns:
             serve_line(xaxis_column_name, all_y_columns, trace, dual=True)
 
-    elif "btn_sidebar_scatter" in changed_id:
-        clear_trace(trace)
-        if marker_size == "":
-            marker_size = 5
-        if opacity == "":
-            opacity = 1.0
-        if marker_border_width == "":
-            marker_border_width = 0
-        if (
-                len(change_to) > 0
-                and len(operator) > 0
-                and len(col) > 0
-                and len(condition) > 0
-        ):
-            new_option = operators_change(
-                dff,
-                operator,
-                options_change_to[change_option],
-                change_to[0],
-                col,
-                condition,
-            )
-            (
-                marker_size,
-                marker_style,
-                color,
-                opacity,
-                marker_border_width,
-                marker_border_color,
-            ) = change_to_formatting(
-                marker_size,
-                marker_style,
-                color,
-                opacity,
-                marker_border_width,
-                marker_border_color,
-                change_option,
-                new_option,
-            )
-        fig = default_graph(
-            dff,
-            xaxis_column_name,
-            y_axis_dict,
-            float(marker_size),
-            marker_style,
-            color,
-            float(opacity),
-            float(marker_border_width),
-            marker_border_color,
-        )
+    elif "btn_sidebar_scatter" in changed_id and len(xaxis_column_name) > 0 and trace not in ['', None]:
+        print('scatter button clicked')
+        if trace in yaxis_column_name:
+            g.delete_trace(trace)
+            serve_scatter(xaxis_column_name, all_y_columns, dual=False)
+        elif trace in secondary_yaxis_columns:
+            g.delete_trace(trace)
+            serve_scatter(xaxis_column_name, all_y_columns, dual=True)
+
     elif "btn_sidebar_bar" in changed_id:
         fig = bar_chart(dff, xaxis_column_name, yaxis_column_name)
     elif "btn_sidebar_area" in changed_id:
@@ -2564,8 +2526,6 @@ def update_graph(
         print(changed_id)
         serve_scatter(xaxis_column_name, all_y_columns, dual=False)
 
-    if trace not in ['', None]:
-        print(g.traces_dict[trace]['trace'].trace_type)
 
     return g.fig, trace_options
 
