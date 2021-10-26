@@ -740,7 +740,6 @@ line_formatting_options = html.Div(
                     style={
                         "position": "sticky",
                         "margin-left": "3px",
-                        # "padding": "3px",
                         "border": "none",
                         "display": "inline",
                         "width": "10%",
@@ -2296,30 +2295,74 @@ def serve_line(x_axis_column, y_axis_columns, trace, dual=False):
 
 
 
+def edit_scatter_options(changed_id:str, trace: str, active:object, settings:object, scatter_options: dict):
+    if 'scatter_marker_style_dropdown' in changed_id:
+        g.delete_trace(trace, True)
+        active.marker_symbol = scatter_options['Marker Symbol']
+        update_cycle(active)
+        settings['Marker Symbol'] = scatter_options['Marker Symbol']
+    elif 'scatter_colorpicker' in changed_id:
+        g.delete_trace(trace, True)
+        active.marker_color = scatter_options['Marker Color']
+        update_cycle(active)
+        settings['Marker Color'] = scatter_options['Marker Color']
+    elif 'scatter_marker_size' in changed_id:
+        g.delete_trace(trace, True)
+        active.marker_size = float(scatter_options['Marker Size'])
+        update_cycle(active)
+        settings['Marker Size'] = float(scatter_options['Marker Size'])
+    elif 'scatter_opacity' in changed_id:
+        g.delete_trace(trace, True)
+        active.opacity = float(scatter_options['Opacity'])
+        update_cycle(active)
+        settings['Opacity'] = float(scatter_options['Opacity'])
+    elif 'scatter_border_width' in changed_id:
+        g.delete_trace(trace, True)
+        active.border_width = float(scatter_options['Marker Border Width'])
+        update_cycle(active)
+        settings['Marker Border Width'] = float(scatter_options['Marker Border Width'])
+    elif 'scatter_colorpicker_marker_border' in changed_id:
+        g.delete_trace(trace, True)
+        active.border_color = scatter_options['Marker Border Color']
+        update_cycle(active)
+        settings['Marker Border Width'] = scatter_options['Marker Border Color']
+
+
 
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown', 'options'),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
+    #Graph option button inputs
     Input(f"btn_sidebar_lines", "n_clicks"),
     Input(f"btn_sidebar_scatter", "n_clicks"),
     Input(f"btn_sidebar_bar", "n_clicks"),
     Input(f"btn_sidebar_area", "n_clicks"),
     Input(f"btn_sidebar_box", "n_clicks"),
-
+    #Scatter Inputs
     Input(f"scatter_marker_size", "value"),
     Input(f"scatter_marker_style_dropdown", "value"),
     Input(f"scatter_colorpicker", "value"),
     Input(f"scatter_opacity", "value"),
     Input(f"scatter_border_width", "value"),
     Input(f"scatter_colorpicker_marker_border", "value"),
+    #Line Graph Inputs
+    Input("line_width", "value"),
+    Input("line_colorpicker", "value"),
+    Input("line_opacity", "value"),
+    Input("line_mode_dropdown", "value"),
+    Input("line_marker_style_dropdown", "value"),
+    Input("line_dash_dropdown", "value"),
+    Input("line_gaps_dash_dropdown", "value"),
 
+    #Conditional Formatting Inputs
     Input(f"conditional-change-options", "value"),
     Input({"type": "change_to", "index": ALL}, "value"),
     Input(f"conditional-change-operators", "value"),
     Input(f"conditional-change-columns", "value"),
     Input(f"conditional-value", "value"),
+
     Input(f"dual-y-slider-container", 'n_clicks'),
     Input(f"secondary-yaxis-column", 'value'),
     Input(f"trace_dropdown", 'value')
@@ -2338,6 +2381,13 @@ def update_graph(
         opacity,
         marker_border_width,
         marker_border_color,
+        line_width,
+        line_color,
+        line_opacity,
+        line_mode,
+        line_marker_style,
+        line_dash,
+        line_gaps,
         change_option,
         change_to,
         operator,
@@ -2358,7 +2408,7 @@ def update_graph(
 
     trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns, all_y_columns)]
 
-    options_change_to = {
+    scatter_options = {
         "Marker Size": marker_size,
         "Marker Symbol": marker_style,
         "Marker Color": color,
@@ -2379,37 +2429,8 @@ def update_graph(
     if trace not in ['', None]:
         active = g.traces_dict[trace]['trace']
         settings = g.traces_dict[trace]['settings']
-        if 'scatter_marker_style_dropdown' in changed_id:
-            g.delete_trace(trace, True)
-            active.marker_symbol = marker_style
-            update_cycle(active)
-            settings['Marker Symbol'] = marker_style
-        elif 'scatter_colorpicker' in changed_id:
-            g.delete_trace(trace, True)
-            active.marker_color = color
-            update_cycle(active)
-            settings['Marker Color'] = color
-        elif 'scatter_marker_size' in changed_id:
-            g.delete_trace(trace, True)
-            active.marker_size = float(marker_size)
-            update_cycle(active)
-            settings['Marker Size'] = float(marker_size)
-        elif 'scatter_opacity' in changed_id:
-            g.delete_trace(trace, True)
-            active.opacity = float(opacity)
-            update_cycle(active)
-            settings['Opacity'] = float(opacity)
-        elif 'scatter_border_width' in changed_id:
-            g.delete_trace(trace, True)
-            active.border_width = float(marker_border_width)
-            update_cycle(active)
-            settings['Marker Border Width'] = float(marker_border_width)
-        elif 'scatter_colorpicker_marker_border' in changed_id:
-            g.delete_trace(trace, True)
-            active.border_color = marker_border_color
-            update_cycle(active)
-            settings['Marker Border Width'] = marker_border_color
-
+        if active.trace_type == 'Scatter':
+            edit_scatter_options(changed_id, trace, active, settings, scatter_options)
     ####################################################################################################################
 
     ####################################################################################################################
