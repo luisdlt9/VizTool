@@ -232,6 +232,13 @@ def scatter_dropdown_options():
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
+def line_dropdown_options():
+    options = [
+        'lines',
+        'lines+markers'
+    ]
+    return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
+
 
 def df_column_dropdown_options():
     cols = list(df.columns)
@@ -840,7 +847,7 @@ line_formatting_options = html.Div(
                 html.Div(
                     dcc.Dropdown(
                         id="line_mode_dropdown",
-                        options=scatter_symbols(),
+                        options= line_dropdown_options(),
                         placeholder="lines",
                         value="circle",
                         style={
@@ -2340,9 +2347,9 @@ def edit_line_options(changed_id: str, trace: str, active: object, settings: obj
         settings['Line Color'] = line_options['Line Color']
     elif 'line_mode_dropdown' in changed_id:
         g.delete_trace(trace, True)
-        active.mode = float(line_options['Line Mode'])
+        active.mode = line_options['Line Mode']
         update_cycle(active)
-        settings['Mode'] = float(line_options['Line Mode'])
+        settings['Mode'] = line_options['Line Mode']
     elif 'line_opacity' in changed_id:
         g.delete_trace(trace, True)
         active.opacity = float(line_options['Opacity'])
