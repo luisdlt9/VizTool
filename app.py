@@ -136,6 +136,7 @@ class Line(Trace):
         self.x_axis_column_name = x_axis_column_name
         self.y_axis_dict = y_axis_dict
         self.marker_symbol = "circle"
+        self.marker_size = 5.0
         self.line_color = "black"
         self.width = 2.0
         self.border_width = 0.0
@@ -162,7 +163,7 @@ class Line(Trace):
                         width=self.width,
                         dash=self.dash,
                     ),
-                    marker=dict(symbol=self.marker_symbol),
+                    marker=dict(symbol=self.marker_symbol, size=self.marker_size),
                     name=column,
                 ),
                 secondary_y=self.y_axis_dict["dual"],
@@ -232,10 +233,18 @@ def scatter_dropdown_options():
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
-def line_dropdown_options():
+def line_mode_dropdown_options():
     options = [
         'lines',
         'lines+markers'
+    ]
+    return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
+
+def line_dash_dropdown_options():
+    options = [
+        'dash',
+        'dot',
+        'dashdot'
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
@@ -847,7 +856,7 @@ line_formatting_options = html.Div(
                 html.Div(
                     dcc.Dropdown(
                         id="line_mode_dropdown",
-                        options= line_dropdown_options(),
+                        options= line_mode_dropdown_options(),
                         placeholder="lines",
                         value="circle",
                         style={
@@ -913,6 +922,41 @@ line_formatting_options = html.Div(
         html.Div(
             children=[
                 html.Div(
+                    "Marker Size:",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                dbc.Input(
+                    placeholder="5",
+                    bs_size="sm",
+                    value=5,
+                    id="line_marker_size",
+                    style={
+                        "position": "sticky",
+                        "margin-left": "3px",
+                        # "padding": "3px",
+                        "border": "none",
+                        "display": "inline",
+                        "width": "10%",
+                        "textAlign": "center",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "20px",
+            },
+
+        ),
+        html.Div(
+            children=[
+                html.Div(
                     "Dash:",
                     style={
                         "position": "relative",
@@ -928,7 +972,7 @@ line_formatting_options = html.Div(
                 html.Div(
                     dcc.Dropdown(
                         id="line_dash_dropdown",
-                        options=scatter_symbols(),
+                        options=line_dash_dropdown_options(),
                         value=None,
                         style={
                             "width": "100px",
@@ -2284,6 +2328,7 @@ def serve_line(x_axis_column, y_axis_columns, trace, dual=False):
             g.traces_dict[line.trace_name] = {'trace': line,
                                               'settings': {'Line Width': line.width,
                                                            'Marker Symbol': line.marker_symbol,
+                                                           'Marker Size': line.marker_size,
                                                            'Line Color': line.line_color,
                                                            'Opacity': line.opacity,
                                                            'Border Width': line.border_width,
@@ -2360,6 +2405,11 @@ def edit_line_options(changed_id: str, trace: str, active: object, settings: obj
         active.marker_symbol = line_options['Marker Symbol']
         update_cycle(active)
         settings['Marker Symbol'] = line_options['Marker Symbol']
+    elif 'line_marker_size' in changed_id:
+        g.delete_trace(trace, True)
+        active.marker_size = float(line_options['Marker Size'])
+        update_cycle(active)
+        settings['Marker Size'] = float(line_options['Marker Size'])
     elif 'line_dash_dropdown' in changed_id:
         g.delete_trace(trace, True)
         active.dash = line_options['Line Dash']
@@ -2396,6 +2446,7 @@ def edit_line_options(changed_id: str, trace: str, active: object, settings: obj
     Input("line_opacity", "value"),
     Input("line_mode_dropdown", "value"),
     Input("line_marker_style_dropdown", "value"),
+    Input('line_marker_size', 'value'),
     Input("line_dash_dropdown", "value"),
     Input("line_gaps_dropdown", "value"),
 
@@ -2429,6 +2480,7 @@ def update_graph(
         line_opacity,
         line_mode,
         line_marker_style,
+        line_marker_size,
         line_dash,
         line_gaps,
         change_option,
@@ -2465,6 +2517,7 @@ def update_graph(
         'Opacity': line_opacity,
         'Line Mode': line_mode,
         'Marker Symbol': line_marker_style,
+        "Marker Size": line_marker_size,
         'Line Dash': line_dash,
         'Line Gaps': line_gaps
     }
