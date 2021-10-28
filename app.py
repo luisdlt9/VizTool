@@ -733,7 +733,7 @@ line_formatting_options = html.Div(
                     },
                 ),
                 dbc.Input(
-                    placeholder="5",
+                    placeholder="2",
                     bs_size="sm",
                     value=5,
                     id="line_width",
@@ -960,7 +960,7 @@ line_formatting_options = html.Div(
                 ),
                 html.Div(
                     dcc.Dropdown(
-                        id="line_gaps_dash_dropdown",
+                        id="line_gaps_dropdown",
                         options=[
                             {'label': 'True', 'value': True},
                             {'label': 'False', 'value': False},
@@ -2294,8 +2294,7 @@ def serve_line(x_axis_column, y_axis_columns, trace, dual=False):
                                               }
 
 
-
-def edit_scatter_options(changed_id:str, trace: str, active:object, settings:object, scatter_options: dict):
+def edit_scatter_options(changed_id: str, trace: str, active: object, settings: object, scatter_options: dict):
     if 'scatter_marker_style_dropdown' in changed_id:
         g.delete_trace(trace, True)
         active.marker_symbol = scatter_options['Marker Symbol']
@@ -2328,35 +2327,72 @@ def edit_scatter_options(changed_id:str, trace: str, active:object, settings:obj
         settings['Marker Border Width'] = scatter_options['Marker Border Color']
 
 
+def edit_line_options(changed_id: str, trace: str, active: object, settings: object, line_options: dict):
+    if 'line_width' in changed_id:
+        g.delete_trace(trace, True)
+        active.width = float(line_options['Line Width'])
+        update_cycle(active)
+        settings['Line Width'] = float(line_options['Line Width'])
+    elif 'line_colorpicker' in changed_id:
+        g.delete_trace(trace, True)
+        active.line_color = line_options['Line Color']
+        update_cycle(active)
+        settings['Line Color'] = line_options['Line Color']
+    elif 'line_mode_dropdown' in changed_id:
+        g.delete_trace(trace, True)
+        active.mode = float(line_options['Line Mode'])
+        update_cycle(active)
+        settings['Mode'] = float(line_options['Line Mode'])
+    elif 'line_opacity' in changed_id:
+        g.delete_trace(trace, True)
+        active.opacity = float(line_options['Opacity'])
+        update_cycle(active)
+        settings['Opacity'] = float(line_options['Opacity'])
+    elif 'line_marker_style_dropdown' in changed_id:
+        g.delete_trace(trace, True)
+        active.marker_symbol = float(line_options['Marker Symbol'])
+        update_cycle(active)
+        settings['Marker Symbol'] = float(line_options['Marker Symbol'])
+    elif 'line_dash_dropdown' in changed_id:
+        g.delete_trace(trace, True)
+        active.dash = line_options['Line Dash']
+        update_cycle(active)
+        settings['Dash'] = line_options['Line Dash']
+    elif 'line_gaps_dropdown' in changed_id:
+        g.delete_trace(trace, True)
+        active.connectgaps = line_options['Line Gaps']
+        update_cycle(active)
+        settings['Connect Gaps'] = line_options['Line Gaps']
+
 
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown', 'options'),
     Input("xaxis-column", "value"),
     Input("yaxis-column", "value"),
-    #Graph option button inputs
+    # Graph option button inputs
     Input(f"btn_sidebar_lines", "n_clicks"),
     Input(f"btn_sidebar_scatter", "n_clicks"),
     Input(f"btn_sidebar_bar", "n_clicks"),
     Input(f"btn_sidebar_area", "n_clicks"),
     Input(f"btn_sidebar_box", "n_clicks"),
-    #Scatter Inputs
+    # Scatter Inputs
     Input(f"scatter_marker_size", "value"),
     Input(f"scatter_marker_style_dropdown", "value"),
     Input(f"scatter_colorpicker", "value"),
     Input(f"scatter_opacity", "value"),
     Input(f"scatter_border_width", "value"),
     Input(f"scatter_colorpicker_marker_border", "value"),
-    #Line Graph Inputs
+    # Line Graph Inputs
     Input("line_width", "value"),
     Input("line_colorpicker", "value"),
     Input("line_opacity", "value"),
     Input("line_mode_dropdown", "value"),
     Input("line_marker_style_dropdown", "value"),
     Input("line_dash_dropdown", "value"),
-    Input("line_gaps_dash_dropdown", "value"),
+    Input("line_gaps_dropdown", "value"),
 
-    #Conditional Formatting Inputs
+    # Conditional Formatting Inputs
     Input(f"conditional-change-options", "value"),
     Input({"type": "change_to", "index": ALL}, "value"),
     Input(f"conditional-change-operators", "value"),
@@ -2417,7 +2453,13 @@ def update_graph(
         "Marker Border Color": marker_border_color,
     }
     line_options = {
-
+        'Line Width': line_width,
+        'Line Color': line_color,
+        'Opacity': line_opacity,
+        'Line Mode': line_mode,
+        'Marker Symbol': line_marker_style,
+        'Line Dash': line_dash,
+        'Line Gaps': line_gaps
     }
 
     dff = df.copy()
@@ -2434,13 +2476,17 @@ def update_graph(
         settings = g.traces_dict[trace]['settings']
         if active.trace_type == 'Scatter':
             edit_scatter_options(changed_id, trace, active, settings, scatter_options)
+        elif active.trace_type == 'Line':
+            edit_line_options(changed_id, trace, active, settings, line_options)
     ####################################################################################################################
 
     ####################################################################################################################
     if trace not in ['', None]:
         active = g.traces_dict[trace]['trace']
     # Conditional Editing
-    if operator not in [None, ''] and col not in [None, ''] and condition not in ['', None] and trace not in ['',None] and change_to not in [None, []]:
+    if operator not in [None, ''] and col not in [None, ''] and condition not in ['', None] and trace not in ['',
+                                                                                                              None] and change_to not in [
+        None, []]:
         print(f'change_to {change_to}')
         active = g.traces_dict[trace]['trace']
         if change_option == 'Marker Symbol':
@@ -2526,7 +2572,6 @@ def update_graph(
         print(changed_id)
         serve_scatter(xaxis_column_name, all_y_columns, dual=False)
 
-
     return g.fig, trace_options
 
 
@@ -2562,8 +2607,8 @@ def update_graph(
 def serve_graph_formatting_options(scatter_nclicks, lines_nclicks):
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
     print(f'chnaged_id {changed_id}')
-    show = {'display':"block"}
-    hide = {'display':'none'}
+    show = {'display': "block"}
+    hide = {'display': 'none'}
     if 'btn_sidebar_lines' in changed_id:
         return hide, show
     elif 'btn_sidebar_scatter' in changed_id:
