@@ -742,7 +742,7 @@ line_formatting_options = html.Div(
                 dbc.Input(
                     placeholder="2",
                     bs_size="sm",
-                    value=5,
+                    value=2,
                     id="line_width",
                     style={
                         "position": "sticky",
@@ -2357,9 +2357,9 @@ def edit_line_options(changed_id: str, trace: str, active: object, settings: obj
         settings['Opacity'] = float(line_options['Opacity'])
     elif 'line_marker_style_dropdown' in changed_id:
         g.delete_trace(trace, True)
-        active.marker_symbol = float(line_options['Marker Symbol'])
+        active.marker_symbol = line_options['Marker Symbol']
         update_cycle(active)
-        settings['Marker Symbol'] = float(line_options['Marker Symbol'])
+        settings['Marker Symbol'] = line_options['Marker Symbol']
     elif 'line_dash_dropdown' in changed_id:
         g.delete_trace(trace, True)
         active.dash = line_options['Line Dash']
