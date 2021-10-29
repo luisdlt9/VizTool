@@ -222,7 +222,7 @@ def scatter_symbols():
     return [dict(zip(("label", "value"), symbol)) for symbol in zip(symbols, symbols)]
 
 
-def scatter_dropdown_options():
+def scatter_conditional_dropdown_options():
     options = [
         "Marker Size",
         "Marker Symbol",
@@ -230,6 +230,19 @@ def scatter_dropdown_options():
         "Opacity",
         "Marker Border Width",
         "Marker Border Color",
+    ]
+    return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
+
+def line_conditional_dropdown_options():
+    options = [
+        'Line Width',
+        'Line Color',
+        'Opacity',
+        'Mode',
+        'Marker Symbol',
+        'Marker Size',
+        'Dash',
+        'Connect Gaps'
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
@@ -1678,7 +1691,7 @@ sidebar_ = html.Div(
                                                 html.Div(
                                                     dcc.Dropdown(
                                                         id="conditional-change-options",
-                                                        options=scatter_dropdown_options(),
+                                                        options=[],
                                                         value="",
                                                         style={
                                                             "width": "150px",
@@ -2378,6 +2391,9 @@ def edit_scatter_options(changed_id: str, trace: str, active: object, settings: 
         update_cycle(active)
         settings['Marker Border Width'] = scatter_options['Marker Border Color']
 
+def scatter_conditional_options():
+    pass
+
 
 def edit_line_options(changed_id: str, trace: str, active: object, settings: object, line_options: dict):
     if 'line_width' in changed_id:
@@ -2719,6 +2735,24 @@ def update_change_to(trace):
         # print(f'settings[To] {settings["To"]}')
         return settings['To']
 
+
+@app.callback(
+    Output('conditional-change-options', 'options'),
+    Input('btn_sidebar_scatter', 'n_clicks'),
+    Input('btn_sidebar_lines', 'n_clicks'),
+    Input('trace_dropdown', 'value')
+)
+def update_conditional_change_options(scatter_btn,line_btn, trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
+    trace_object = g.traces_dict[trace]
+    if trace_object['trace'].trace_type == 'Line' or 'btn_sidebar_lines' in changed_id:
+        return line_conditional_dropdown_options()
+    elif trace_object['trace'].trace_type == "Scatter" or 'btn_sidebar_scatter' in changed_id:
+        return scatter_conditional_dropdown_options()
+
+    return []
 
 @app.callback(
     Output("conditional-change-columns", "options"),
