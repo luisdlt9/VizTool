@@ -2396,12 +2396,13 @@ def edit_scatter_options(changed_id: str, trace: str, active: object, settings: 
         settings['Marker Border Width'] = scatter_options['Marker Border Color']
 
 
-def scatter_conditional_options(active: object, settings: object, trace: str, conditional_arguments: object, scatter_options: object, all_y_columns: list):
+def scatter_conditional_options(active: object, trace: str, conditional_arguments: object,
+                                scatter_options: object, all_y_columns: list):
     # Need to refactor this function, too much happening in one function, split into multiple smaller or simplify operators_change so that there is less repitition overall.
     option = conditional_arguments.change_option
     new_formatting = operators_change(conditional_arguments.dff, conditional_arguments.operator,
-                                            scatter_options[option], conditional_arguments.change_to[0],
-                                            conditional_arguments.col, conditional_arguments.condition)
+                                      scatter_options[option], conditional_arguments.change_to[0],
+                                      conditional_arguments.col, conditional_arguments.condition)
 
     g.delete_trace(trace, True)
     if option == 'Marker Symbol':
@@ -2418,7 +2419,6 @@ def scatter_conditional_options(active: object, settings: object, trace: str, co
         active.border_color = new_formatting
     update_cycle(active)
 
-
     for y in all_y_columns:
         if trace not in ['', None] and y not in g.get_traces():
             new_trace = y
@@ -2426,7 +2426,7 @@ def scatter_conditional_options(active: object, settings: object, trace: str, co
             new_trace = None
 
         if trace not in ['', None, new_trace]:
-            settings = {'Marker Size': float(scatter_options['Marker Size']),
+            g.traces_dict[trace]['settings'] = {'Marker Size': float(scatter_options['Marker Size']),
                         'Marker Symbol': scatter_options['Marker Symbol'],
                         'Marker Color': scatter_options['Marker Color'],
                         'Opacity': float(scatter_options['Opacity']),
@@ -2483,6 +2483,58 @@ def edit_line_options(changed_id: str, trace: str, active: object, settings: obj
         update_cycle(active)
         settings['Connect Gaps'] = line_options['Line Gaps']
 
+def line_conditional_options(active: object, trace: str, conditional_arguments: object,
+                                line_options: object, all_y_columns: list):
+    # Need to refactor this function, too much happening in one function, split into multiple smaller or simplify operators_change so that there is less repitition overall.
+    option = conditional_arguments.change_option
+    new_formatting = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                      line_options[option], conditional_arguments.change_to[0],
+                                      conditional_arguments.col, conditional_arguments.condition)
+
+    g.delete_trace(trace, True)
+    if option == 'Line Width':
+        active.width = new_formatting
+    elif option == 'Line Color':
+        active.line_color = new_formatting
+    elif option == 'Opacity':
+        active.opacity = new_formatting
+    elif option == 'Line Mode':
+        active.mode = new_formatting
+    elif option == 'Marker Symbol':
+        active.marker_symbol = new_formatting
+    elif option == 'Marker Size':
+        active.marker_size = new_formatting
+    elif option == 'Line Dash':
+        active.dash = new_formatting
+    elif option == 'Line Gaps':
+        active.connectgaps = new_formatting
+    update_cycle(active)
+
+    for y in all_y_columns:
+        if trace not in ['', None] and y not in g.get_traces():
+            new_trace = y
+        else:
+            new_trace = None
+
+        if trace not in ['', None, new_trace]:
+            g.traces_dict[trace]['settings'] = {
+                                                'Line Width': line_options['Line Width'],
+                                               'Marker Symbol': line_options['Marker Symbol'],
+                                               'Marker Size': line_options['Marker Size'],
+                                               'Line Color': line_options['Line Color'],
+                                               'Opacity': line_options['Opacity'],
+                                               #'Border Width': line_options[''],
+                                               #'Border Color': line.border_color,
+                                               'Mode': line_options['Line Mode'],
+                                               'Dash': line_options['Line Dash'],
+                                               'Connect Gaps': line_options['Line Gaps'],
+                                                'Change': conditional_arguments.change_option,
+                                                'To': conditional_arguments.change_to,
+                                                'Column': conditional_arguments.col,
+                                                'Operator': conditional_arguments.operator,
+                                                'Condition': conditional_arguments.condition
+
+                                               }
 
 @app.callback(
     Output("indicator-graphic", "figure"),
@@ -2561,7 +2613,6 @@ def update_graph(
     all_y_columns = list(yaxis_column_name)
     all_y_columns.extend(secondary_yaxis_columns)
 
-
     trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns, all_y_columns)]
 
     scatter_options = {
@@ -2613,7 +2664,9 @@ def update_graph(
                                           ['change_option', 'dff', 'operator', 'change_to', 'col', 'condition'])
         conditional_arguments = ConditionalArguments(change_option, dff, operator, change_to, col, condition)
         if active.trace_type == 'Scatter':
-            scatter_conditional_options(active, settings, trace, conditional_arguments, scatter_options, all_y_columns)
+            scatter_conditional_options(active, trace, conditional_arguments, scatter_options, all_y_columns)
+        elif active.trace_type == 'Line':
+            scatter_conditional_options(active, trace, conditional_arguments, line_options, all_y_columns)
 
     ####################################################################################################################
 
