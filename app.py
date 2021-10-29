@@ -279,7 +279,7 @@ def conditional_formatting_operators():
     ]
 
 
-def conditional_change_to_options(option: str) -> object:
+def scatter_conditional_change_to_options(option: str) -> object:
     if option in ["Marker Size", "Opacity", "Marker Border Width"]:
         children = dbc.Input(
             bs_size="sm",
@@ -2747,14 +2747,89 @@ def serve_graph_formatting_options(scatter_nclicks, lines_nclicks):
     return show, hide
 
 
+# @app.callback(
+#     [
+#         # Scatter Outputs
+#         Output(f"scatter_marker_size", "value"),
+#         Output(f"scatter_marker_style_dropdown", "value"),
+#         Output(f"scatter_colorpicker", "value"),
+#         Output(f"scatter_opacity", "value"),
+#         Output(f"scatter_border_width", "value"),
+#         Output(f"scatter_colorpicker_marker_border", "value"),
+#
+#         #Conditional Outputs
+#         Output(f"conditional-change-options", "value"),
+#         Output(f"conditional-change-operators", "value"),
+#         Output(f"conditional-change-columns", "value"),
+#         Output(f"conditional-value", "value"),
+#     ],
+#     Input(f"trace_dropdown", 'value')
+# )
+# def update_scatter_panel_data(trace):
+#     if trace in ['', None]:
+#         raise PreventUpdate
+#     trace_object = g.traces_dict[trace]
+#     if trace_object['trace'].trace_type == "Scatter":
+#         settings = trace_object['settings']
+#         return [settings['Marker Size'], settings['Marker Symbol'], settings['Marker Color'], settings['Opacity'],
+#                 settings[
+#                     'Marker Border Width'], settings['Marker Border Color'], settings['Change'], settings[
+#                     'Operator'], settings['Column'], settings['Condition']]
+
 @app.callback(
     [
+        # Scatter Outputs
         Output(f"scatter_marker_size", "value"),
         Output(f"scatter_marker_style_dropdown", "value"),
         Output(f"scatter_colorpicker", "value"),
         Output(f"scatter_opacity", "value"),
         Output(f"scatter_border_width", "value"),
         Output(f"scatter_colorpicker_marker_border", "value"),
+
+    ],
+    Input(f"trace_dropdown", 'value')
+)
+def update_scatter_panel_data(trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    trace_object = g.traces_dict[trace]
+    if trace_object['trace'].trace_type != "Scatter":
+        raise PreventUpdate
+    settings = trace_object['settings']
+    return [settings['Marker Size'], settings['Marker Symbol'], settings['Marker Color'], settings['Opacity'],
+            settings['Marker Border Width'], settings['Marker Border Color']]
+
+
+@app.callback(
+    [
+        # Line Outputs
+        Output("line_width", "value"),
+        Output("line_colorpicker", "value"),
+        Output("line_opacity", "value"),
+        Output("line_mode_dropdown", "value"),
+        Output("line_marker_style_dropdown", "value"),
+        Output('line_marker_size', 'value'),
+        Output("line_dash_dropdown", "value"),
+        Output("line_gaps_dropdown", "value"),
+
+    ],
+    Input(f"trace_dropdown", 'value')
+)
+def update_line_panel_data(trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    trace_object = g.traces_dict[trace]
+    if trace_object['trace'].trace_type != "Line":
+        raise PreventUpdate
+    settings = trace_object['settings']
+    return [settings['Line Width'], settings['Line Color'], settings['Opacity'], settings['Mode'],
+            settings['Marker Symbol'], settings['Marker Size'],settings['Dash'],settings['Connect Gaps']]
+
+
+
+@app.callback(
+    [
+        #Conditional Outputs
         Output(f"conditional-change-options", "value"),
         Output(f"conditional-change-operators", "value"),
         Output(f"conditional-change-columns", "value"),
@@ -2762,16 +2837,12 @@ def serve_graph_formatting_options(scatter_nclicks, lines_nclicks):
     ],
     Input(f"trace_dropdown", 'value')
 )
-def update_panel_data(trace):
+def update_conditional_panel_data(trace):
     if trace in ['', None]:
         raise PreventUpdate
     trace_object = g.traces_dict[trace]
-    if trace_object['trace'].trace_type == "Scatter":
-        settings = trace_object['settings']
-        return [settings['Marker Size'], settings['Marker Symbol'], settings['Marker Color'], settings['Opacity'],
-                settings[
-                    'Marker Border Width'], settings['Marker Border Color'], settings['Change'], settings[
-                    'Operator'], settings['Column'], settings['Condition']]
+    settings = trace_object['settings']
+    return [settings['Change'], settings['Operator'], settings['Column'], settings['Condition']]
 
 
 @app.callback(
@@ -2821,9 +2892,16 @@ def update_conditional_cols(contents):
 @app.callback(
     Output("conditional-change-to", "children"),
     Input("conditional-change-options", "value"),
+    State('trace_dropdown', 'value')
 )
-def update_change_to_options(option):
-    return conditional_change_to_options(option)
+def update_change_to_options(option, trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    trace_object = g.traces_dict[trace]
+    if trace_object['trace'].trace_type == "Scatter":
+        return scatter_conditional_change_to_options(option)
+
+    return []
 
 
 @app.callback(
