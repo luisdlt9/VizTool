@@ -26,6 +26,7 @@ import operator as op
 from plotly.subplots import make_subplots
 import plotly
 from dash.exceptions import PreventUpdate
+from collections import namedtuple
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -233,6 +234,7 @@ def scatter_conditional_dropdown_options():
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
+
 def line_conditional_dropdown_options():
     options = [
         'Line Width',
@@ -246,12 +248,14 @@ def line_conditional_dropdown_options():
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
+
 def line_mode_dropdown_options():
     options = [
         'lines',
         'lines+markers'
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
+
 
 def line_dash_dropdown_options():
     options = [
@@ -869,7 +873,7 @@ line_formatting_options = html.Div(
                 html.Div(
                     dcc.Dropdown(
                         id="line_mode_dropdown",
-                        options= line_mode_dropdown_options(),
+                        options=line_mode_dropdown_options(),
                         placeholder="lines",
                         value="circle",
                         style={
@@ -2391,8 +2395,68 @@ def edit_scatter_options(changed_id: str, trace: str, active: object, settings: 
         update_cycle(active)
         settings['Marker Border Width'] = scatter_options['Marker Border Color']
 
-def scatter_conditional_options():
-    pass
+
+def scatter_conditional_options(active: object, settings: object, trace: str, conditional_arguments: object, scatter_options: object, all_y_columns: list):
+    # Need to refactor this function, too much happening in one function, split into multiple smaller or simplify operators_change so that there is less repitition overall.
+    if conditional_arguments.change_option == 'Marker Symbol':
+        g.delete_trace(trace, True)
+        active.marker_symbol = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                                scatter_options['Marker Symbol'], conditional_arguments.change_to[0],
+                                                conditional_arguments.col, conditional_arguments.condition)
+        update_cycle(active)
+    elif conditional_arguments.change_option == 'Marker Color':
+        g.delete_trace(trace, True)
+        active.marker_color = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                               scatter_options['Marker Color'], conditional_arguments.change_to[0],
+                                               conditional_arguments.col, conditional_arguments.condition)
+        update_cycle(active)
+    elif conditional_arguments.change_option == 'Marker Size':
+        g.delete_trace(trace, True)
+        active.marker_size = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                              scatter_options['Marker Size'], conditional_arguments.change_to[0],
+                                              conditional_arguments.col, conditional_arguments.condition)
+        update_cycle(active)
+    elif conditional_arguments.change_option == 'Opacity':
+        g.delete_trace(trace, True)
+        active.opacity = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                          scatter_options['Opacity'], conditional_arguments.change_to[0],
+                                          conditional_arguments.col, conditional_arguments.condition)
+        update_cycle(active)
+    elif conditional_arguments.change_option == 'Marker Border Width':
+        g.delete_trace(trace, True)
+        active.border_width = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                               scatter_options['Marker Border Width'],
+                                               conditional_arguments.change_to[0], conditional_arguments.col,
+                                               conditional_arguments.condition)
+        update_cycle(active)
+    elif conditional_arguments.change_option == 'Marker Border Color':
+        g.delete_trace(trace, True)
+        active.border_color = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                               scatter_options['Marker Border Color'],
+                                               conditional_arguments.change_to[0], conditional_arguments.col,
+                                               conditional_arguments.condition)
+        update_cycle(active)
+
+    for y in all_y_columns:
+        if trace not in ['', None] and y not in g.get_traces():
+            new_trace = y
+        else:
+            new_trace = None
+
+        if trace not in ['', None, new_trace]:
+            settings = {'Marker Size': float(scatter_options['Marker Size']),
+                        'Marker Symbol': scatter_options['Marker Symbol'],
+                        'Marker Color': scatter_options['Marker Color'],
+                        'Opacity': float(scatter_options['Opacity']),
+                        'Marker Border Width': float(
+                            scatter_options['Marker Border Width']),
+                        'Marker Border Color': scatter_options['Marker Border Color'],
+                        'Change': conditional_arguments.change_option,
+                        'To': conditional_arguments.change_to,
+                        'Column': conditional_arguments.col,
+                        'Operator': conditional_arguments.operator,
+                        'Condition': conditional_arguments.condition
+                        }
 
 
 def edit_line_options(changed_id: str, trace: str, active: object, settings: object, line_options: dict):
@@ -2514,8 +2578,7 @@ def update_graph(
     ]
     all_y_columns = list(yaxis_column_name)
     all_y_columns.extend(secondary_yaxis_columns)
-    # if not all_y_columns:
-    #     keep_active_traces(all_y_columns)
+
 
     trace_options = [dict(zip(("label", "value"), trace)) for trace in zip(all_y_columns, all_y_columns)]
 
@@ -2541,8 +2604,6 @@ def update_graph(
     dff = df.copy()
 
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
-    # print(f'prints all_y_columns {all_y_columns}')
-    # g.keep_active_traces(all_y_columns)
 
     ####################################################################################################################
     # Edit Traces (no conditional)
@@ -2565,53 +2626,12 @@ def update_graph(
         None, []]:
         print(f'change_to {change_to}')
         active = g.traces_dict[trace]['trace']
-        if change_option == 'Marker Symbol':
-            g.delete_trace(trace, True)
-            active.marker_symbol = operators_change(dff, operator, marker_style, change_to[0], col, condition)
-            update_cycle(active)
-        elif change_option == 'Marker Color':
-            g.delete_trace(trace, True)
-            active.marker_color = operators_change(dff, operator, color, change_to[0], col, condition)
-            update_cycle(active)
-        elif change_option == 'Marker Size':
-            g.delete_trace(trace, True)
-            active.marker_size = operators_change(dff, operator, color, change_to[0], col, condition)
-            update_cycle(active)
-        elif change_option == 'Opacity':
-            g.delete_trace(trace, True)
-            active.opacity = operators_change(dff, operator, color, change_to[0], col, condition)
-            update_cycle(active)
-        elif change_option == 'Marker Border Width':
-            g.delete_trace(trace, True)
-            active.border_width = operators_change(dff, operator, color, change_to[0], col, condition)
-            update_cycle(active)
-        elif change_option == 'Marker Border Color':
-            g.delete_trace(trace, True)
-            active.border_color = operators_change(dff, operator, color, change_to[0], col, condition)
-            update_cycle(active)
-
-        for y in all_y_columns:
-            if trace not in ['', None] and y not in g.get_traces():
-                new_trace = y
-            else:
-                new_trace = None
-
-            print(f'new_trace {new_trace}')
-
-            if trace not in ['', None, new_trace]:
-                g.traces_dict[trace]['settings'] = {'Marker Size': float(marker_size),
-                                                    'Marker Symbol': marker_style,
-                                                    'Marker Color': color,
-                                                    'Opacity': float(opacity),
-                                                    'Marker Border Width': float(
-                                                        marker_border_width),
-                                                    'Marker Border Color': marker_border_color,
-                                                    'Change': change_option,
-                                                    'To': change_to,
-                                                    'Column': col,
-                                                    'Operator': operator,
-                                                    'Condition': condition
-                                                    }
+        settings = g.traces_dict[trace]['settings']
+        ConditionalArguments = namedtuple('ConditionalArguments',
+                                          ['change_option', 'dff', 'operator', 'change_to', 'col', 'condition'])
+        conditional_arguments = ConditionalArguments(change_option, dff, operator, change_to, col, condition)
+        if active.trace_type == 'Scatter':
+            scatter_conditional_options(active, settings, trace, conditional_arguments, scatter_options, all_y_columns)
 
     ####################################################################################################################
 
@@ -2742,7 +2762,7 @@ def update_change_to(trace):
     Input('btn_sidebar_lines', 'n_clicks'),
     Input('trace_dropdown', 'value')
 )
-def update_conditional_change_options(scatter_btn,line_btn, trace):
+def update_conditional_change_options(scatter_btn, line_btn, trace):
     if trace in ['', None]:
         raise PreventUpdate
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
@@ -2753,6 +2773,7 @@ def update_conditional_change_options(scatter_btn,line_btn, trace):
         return scatter_conditional_dropdown_options()
 
     return []
+
 
 @app.callback(
     Output("conditional-change-columns", "options"),
