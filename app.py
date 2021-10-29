@@ -240,7 +240,7 @@ def line_conditional_dropdown_options():
         'Line Width',
         'Line Color',
         'Opacity',
-        'Mode',
+        'Line Mode',
         'Marker Symbol',
         'Marker Size',
         'Dash',
@@ -279,8 +279,8 @@ def conditional_formatting_operators():
     ]
 
 
-def scatter_conditional_change_to_options(option: str) -> object:
-    if option in ["Marker Size", "Opacity", "Marker Border Width"]:
+def conditional_change_to_options(option: str) -> object:
+    if option in {"Marker Size", "Opacity", "Marker Border Width", 'Line Width', }:
         children = dbc.Input(
             bs_size="sm",
             id={"type": f"change_to", "index": option},
@@ -296,7 +296,7 @@ def scatter_conditional_change_to_options(option: str) -> object:
             },
         )
         return children
-    elif option in ["Marker Color", "Marker Border Color"]:
+    elif option in {"Marker Color", "Marker Border Color", 'Line Color'}:
         children = dbc.Input(
             type="color",
             id={"type": f"change_to", "index": option},
@@ -304,7 +304,7 @@ def scatter_conditional_change_to_options(option: str) -> object:
             style={"width": 20, "height": 20, "margin-top": "8px"},
         )
         return children
-    elif option in ["Marker Symbol"]:
+    elif option in {"Marker Symbol"}:
         children = dcc.Dropdown(
             id={"type": f"change_to", "index": option},
             options=scatter_symbols(),
@@ -317,6 +317,48 @@ def scatter_conditional_change_to_options(option: str) -> object:
             },
         )
         return children
+    elif option in {'Connect Gaps'}:
+        options = [
+                      {'label': 'True', 'value': True},
+                      {'label': 'False', 'value': False},
+                  ]
+        children = dcc.Dropdown(
+            id={"type": f"change_to", "index": option},
+            options=options,
+            style={
+                "width": "100px",
+                "height": "8px",
+                "vertical-align": "middle",
+                "font-size": 10,
+            },
+        )
+        return children
+    elif option in {'Dash'}:
+        children = dcc.Dropdown(
+            id={"type": f"change_to", "index": option},
+            options= line_dash_dropdown_options(),
+            value=None,
+            style={
+                "width": "100px",
+                "height": "8px",
+                "vertical-align": "middle",
+                "font-size": 10,
+            },
+        )
+        return children
+    elif option in {'Line Mode'}:
+        children = dcc.Dropdown(
+            id={"type": f"change_to", "index": option},
+            options= line_mode_dropdown_options(),
+            style={
+                "width": "100px",
+                "height": "8px",
+                "vertical-align": "middle",
+                "font-size": 10,
+            },
+        )
+        return children
+
 
 
 def operator_filter(df, operator, original_value, new_value, col, condition):
@@ -875,7 +917,7 @@ line_formatting_options = html.Div(
                         id="line_mode_dropdown",
                         options=line_mode_dropdown_options(),
                         placeholder="lines",
-                        value="circle",
+                        value='lines',
                         style={
                             "width": "100px",
                             "height": "8px",
@@ -2474,9 +2516,9 @@ def edit_line_options(changed_id: str, trace: str, active: object, settings: obj
         settings['Marker Size'] = float(line_options['Marker Size'])
     elif 'line_dash_dropdown' in changed_id:
         g.delete_trace(trace, True)
-        active.dash = line_options['Line Dash']
+        active.dash = line_options['Dash']
         update_cycle(active)
-        settings['Dash'] = line_options['Line Dash']
+        settings['Dash'] = line_options['Dash']
     elif 'line_gaps_dropdown' in changed_id:
         g.delete_trace(trace, True)
         active.connectgaps = line_options['Line Gaps']
@@ -2504,7 +2546,7 @@ def line_conditional_options(active: object, trace: str, conditional_arguments: 
         active.marker_symbol = new_formatting
     elif option == 'Marker Size':
         active.marker_size = new_formatting
-    elif option == 'Line Dash':
+    elif option == 'Dash':
         active.dash = new_formatting
     elif option == 'Line Gaps':
         active.connectgaps = new_formatting
@@ -2526,7 +2568,7 @@ def line_conditional_options(active: object, trace: str, conditional_arguments: 
                                                #'Border Width': line_options[''],
                                                #'Border Color': line.border_color,
                                                'Mode': line_options['Line Mode'],
-                                               'Dash': line_options['Line Dash'],
+                                               'Dash': line_options['Dash'],
                                                'Connect Gaps': line_options['Line Gaps'],
                                                 'Change': conditional_arguments.change_option,
                                                 'To': conditional_arguments.change_to,
@@ -2630,7 +2672,7 @@ def update_graph(
         'Line Mode': line_mode,
         'Marker Symbol': line_marker_style,
         "Marker Size": line_marker_size,
-        'Line Dash': line_dash,
+        'Dash': line_dash,
         'Line Gaps': line_gaps
     }
 
@@ -2666,7 +2708,7 @@ def update_graph(
         if active.trace_type == 'Scatter':
             scatter_conditional_options(active, trace, conditional_arguments, scatter_options, all_y_columns)
         elif active.trace_type == 'Line':
-            scatter_conditional_options(active, trace, conditional_arguments, line_options, all_y_columns)
+            line_conditional_options(active, trace, conditional_arguments, line_options, all_y_columns)
 
     ####################################################################################################################
 
@@ -2898,10 +2940,8 @@ def update_change_to_options(option, trace):
     if trace in ['', None]:
         raise PreventUpdate
     trace_object = g.traces_dict[trace]
-    if trace_object['trace'].trace_type == "Scatter":
-        return scatter_conditional_change_to_options(option)
-
-    return []
+    # if trace_object['trace'].trace_type == "Scatter":
+    return conditional_change_to_options(option)
 
 
 @app.callback(
