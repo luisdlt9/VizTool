@@ -2398,44 +2398,26 @@ def edit_scatter_options(changed_id: str, trace: str, active: object, settings: 
 
 def scatter_conditional_options(active: object, settings: object, trace: str, conditional_arguments: object, scatter_options: object, all_y_columns: list):
     # Need to refactor this function, too much happening in one function, split into multiple smaller or simplify operators_change so that there is less repitition overall.
-    if conditional_arguments.change_option == 'Marker Symbol':
-        g.delete_trace(trace, True)
-        active.marker_symbol = operators_change(conditional_arguments.dff, conditional_arguments.operator,
-                                                scatter_options['Marker Symbol'], conditional_arguments.change_to[0],
-                                                conditional_arguments.col, conditional_arguments.condition)
-        update_cycle(active)
-    elif conditional_arguments.change_option == 'Marker Color':
-        g.delete_trace(trace, True)
-        active.marker_color = operators_change(conditional_arguments.dff, conditional_arguments.operator,
-                                               scatter_options['Marker Color'], conditional_arguments.change_to[0],
-                                               conditional_arguments.col, conditional_arguments.condition)
-        update_cycle(active)
-    elif conditional_arguments.change_option == 'Marker Size':
-        g.delete_trace(trace, True)
-        active.marker_size = operators_change(conditional_arguments.dff, conditional_arguments.operator,
-                                              scatter_options['Marker Size'], conditional_arguments.change_to[0],
-                                              conditional_arguments.col, conditional_arguments.condition)
-        update_cycle(active)
-    elif conditional_arguments.change_option == 'Opacity':
-        g.delete_trace(trace, True)
-        active.opacity = operators_change(conditional_arguments.dff, conditional_arguments.operator,
-                                          scatter_options['Opacity'], conditional_arguments.change_to[0],
-                                          conditional_arguments.col, conditional_arguments.condition)
-        update_cycle(active)
-    elif conditional_arguments.change_option == 'Marker Border Width':
-        g.delete_trace(trace, True)
-        active.border_width = operators_change(conditional_arguments.dff, conditional_arguments.operator,
-                                               scatter_options['Marker Border Width'],
-                                               conditional_arguments.change_to[0], conditional_arguments.col,
-                                               conditional_arguments.condition)
-        update_cycle(active)
-    elif conditional_arguments.change_option == 'Marker Border Color':
-        g.delete_trace(trace, True)
-        active.border_color = operators_change(conditional_arguments.dff, conditional_arguments.operator,
-                                               scatter_options['Marker Border Color'],
-                                               conditional_arguments.change_to[0], conditional_arguments.col,
-                                               conditional_arguments.condition)
-        update_cycle(active)
+    option = conditional_arguments.change_option
+    new_formatting = operators_change(conditional_arguments.dff, conditional_arguments.operator,
+                                            scatter_options[option], conditional_arguments.change_to[0],
+                                            conditional_arguments.col, conditional_arguments.condition)
+
+    g.delete_trace(trace, True)
+    if option == 'Marker Symbol':
+        active.marker_symbol = new_formatting
+    elif option == 'Marker Color':
+        active.marker_color = new_formatting
+    elif option == 'Marker Size':
+        active.marker_size = new_formatting
+    elif option == 'Opacity':
+        active.opacity = new_formatting
+    elif option == 'Marker Border Width':
+        active.border_width = new_formatting
+    elif option == 'Marker Border Color':
+        active.border_color = new_formatting
+    update_cycle(active)
+
 
     for y in all_y_columns:
         if trace not in ['', None] and y not in g.get_traces():
