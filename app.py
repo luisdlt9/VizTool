@@ -27,6 +27,7 @@ from plotly.subplots import make_subplots
 import plotly
 from dash.exceptions import PreventUpdate
 from collections import namedtuple
+import time
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -237,14 +238,14 @@ def scatter_conditional_dropdown_options():
 
 def line_conditional_dropdown_options():
     options = [
-        'Line Width',
-        'Line Color',
-        'Opacity',
-        'Line Mode',
+        #'Line Width',
+        #'Line Color',
+        #'Opacity',
+        #'Line Mode',
         'Marker Symbol',
         'Marker Size',
-        'Dash',
-        'Connect Gaps'
+        #'Dash',
+        #'Connect Gaps'
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
@@ -2775,16 +2776,20 @@ def update_graph(
     Output('scatter_formatting_options', 'style'),
     Output('line_formatting_options', 'style'),
     Input('btn_sidebar_scatter', 'n_clicks'),
-    Input('btn_sidebar_lines', 'n_clicks')
+    Input('btn_sidebar_lines', 'n_clicks'),
+    Input('trace_dropdown', 'value')
 )
-def serve_graph_formatting_options(scatter_nclicks, lines_nclicks):
+def serve_graph_formatting_options(scatter_nclicks, lines_nclicks, trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    time.sleep(0.05)
     changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
-    print(f'chnaged_id {changed_id}')
+    trace_object = g.traces_dict[trace]
     show = {'display': "block"}
     hide = {'display': 'none'}
-    if 'btn_sidebar_lines' in changed_id:
+    if trace_object['trace'].trace_type == "Line" or 'lines' in changed_id:
         return hide, show
-    elif 'btn_sidebar_scatter' in changed_id:
+    elif trace_object['trace'].trace_type == "Scatter" or 'scatter' in changed_id:
         return show, hide
     return show, hide
 
