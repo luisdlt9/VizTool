@@ -2043,7 +2043,7 @@ def toggle_sidebar(n, nclick):
                 "transition": "margin-left .5s",
                 "margin-left": "8rem",
             }
-            cur_nclick = ("SHOW",)
+            cur_nclick = "SHOW"
 
     else:
         content_style = CONTENT_STYLE
