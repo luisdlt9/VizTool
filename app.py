@@ -187,8 +187,10 @@ class Bar(Trace):
         self.x_axis_column_name = x_axis_column_name
         self.y_axis_dict = y_axis_dict
         self.text = None
-        self.color = "blue"
+        self.color = "black"
         self.orientation = "v"
+        self.width = 0.9
+        self.opacity = 1.0
 
     def add_trace(self):
         traces = super().get_traces()
@@ -200,12 +202,14 @@ class Bar(Trace):
                 x = column
                 y = self.x_axis_column_name
 
-            fig = px.bar(
+            bar_fig = px.bar(
                 self.df,
                 x=x,
                 y=y,
                 orientation=self.orientation,
-                text=self.text
+                opacity=self.opacity,
+                text=self.text,
+                barmode='group'
                 # color=self.color,
                 # color_discrete_sequence=["blue"],
                 # base=-self.df[column].values,
@@ -215,11 +219,13 @@ class Bar(Trace):
                 # texttemplate="%{text:.2s}",
                 # marker_color="lightsalmon",
                 # name=column,
-            ).data[0]
-            fig["marker"]["color"] = self.color
+            )
+            bar_fig.data[0]["marker"]["color"] = self.color
+            bar_fig.data[0]["name"] = self.trace_name
+            bar_fig.update_traces(width=self.width)
             self.fig.add_trace(
-                fig,
-                # secondary_y=False,
+                bar_fig.data[0],
+                secondary_y=self.y_axis_dict["dual"],
             )
 
 
@@ -1225,6 +1231,326 @@ line_formatting_options = html.Div(
     id='line_formatting_options',
     style={'display': 'none'}
 )
+
+bar_formatting_options = html.Div(
+    [
+        html.Div(
+            dcc.Markdown("**Bar Formatting**"),
+            style={
+                "color": "white",
+                "position": "relative",
+                "margin-left": "70px",
+                "display": "block",
+                "padding-top": "5px",
+            },
+        ),
+        html.Div(
+            children=[
+                html.Div(
+                    "Bar Width:",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                dbc.Input(
+                    placeholder="0.9",
+                    bs_size="sm",
+                    value=0.9,
+                    id="bar_width",
+                    style={
+                        "position": "sticky",
+                        "margin-left": "3px",
+                        "border": "none",
+                        "display": "inline",
+                        "width": "10%",
+                        "textAlign": "center",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "5px",
+            },
+        ),
+        html.Div(
+            children=[
+                html.Div(
+                    "Bar Color:",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "top": "8px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                html.Div(
+                    dbc.Input(
+                        type="color",
+                        id="bar_colorpicker",
+                        value="#000000",
+                        style={"width": 20, "height": 20},
+                    ),
+                    style={
+                        "position": "absolute",
+                        "margin-left": "5px",
+                        "margin-top": "8px",
+                        "background": "",
+                        "display": "inline",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "0px",
+            },
+        ),
+        html.Div(
+            children=[
+                html.Div(
+                    "Opacity:",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "top": "8px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                dbc.Input(
+                    placeholder="1.0",
+                    bs_size="sm",
+                    value=1.0,
+                    id="bar_opacity",
+                    style={
+                        "position": "absolute",
+                        "margin-left": "3px",
+                        # "padding": "3px",
+                        "border": "none",
+                        "display": "inline",
+                        "width": "10%",
+                        "textAlign": "center",
+                        "margin-top": "11px",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "5px",
+            },
+        ),
+        html.Div(
+            children=[
+                html.Div(
+                    "Mode:",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "top": "8px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                html.Div(
+                    dcc.Dropdown(
+                        id="bar_mode_dropdown",
+                        options=line_mode_dropdown_options(),
+                        placeholder="lines",
+                        value='lines',
+                        style={
+                            "width": "100px",
+                            "height": "8px",
+                            "vertical-align": "middle",
+                            "font-size": 10,
+                        },
+                    ),
+                    style={
+                        "position": "absolute",
+                        "margin-left": "5px",
+                        "margin-top": "3px",
+                        "background": "",
+                        "display": "inline",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "10px",
+            },
+        ),
+        # html.Div(
+        #     children=[
+        #         html.Div(
+        #             "Marker Symbol:",
+        #             style={
+        #                 "position": "relative",
+        #                 "margin-left": "67px",
+        #                 "top": "8px",
+        #                 "padding": "3px",
+        #                 "border": "none",
+        #                 "color": "white",
+        #                 "display": "inline",
+        #                 "size": "10",
+        #             },
+        #         ),
+        #         html.Div(
+        #             dcc.Dropdown(
+        #                 id="line_marker_style_dropdown",
+        #                 options=scatter_symbols(),
+        #                 value="circle",
+        #                 style={
+        #                     "width": "100px",
+        #                     "height": "8px",
+        #                     "vertical-align": "middle",
+        #                     "font-size": 10,
+        #                 },
+        #             ),
+        #             style={
+        #                 "position": "absolute",
+        #                 "margin-left": "5px",
+        #                 "margin-top": "3px",
+        #                 "background": "",
+        #                 "display": "inline",
+        #             },
+        #         ),
+        #     ],
+        #     style={
+        #         "padding-top": "20px",
+        #     },
+        # ),
+        # html.Div(
+        #     children=[
+        #         html.Div(
+        #             "Marker Size:",
+        #             style={
+        #                 "position": "relative",
+        #                 "margin-left": "67px",
+        #                 "padding": "3px",
+        #                 "border": "none",
+        #                 "color": "white",
+        #                 "display": "inline",
+        #                 "size": "10",
+        #             },
+        #         ),
+        #         dbc.Input(
+        #             placeholder="5",
+        #             bs_size="sm",
+        #             value=5,
+        #             id="line_marker_size",
+        #             style={
+        #                 "position": "sticky",
+        #                 "margin-left": "3px",
+        #                 # "padding": "3px",
+        #                 "border": "none",
+        #                 "display": "inline",
+        #                 "width": "10%",
+        #                 "textAlign": "center",
+        #             },
+        #         ),
+        #     ],
+        #     style={
+        #         "padding-top": "20px",
+        #     },
+        #
+        # ),
+        # html.Div(
+        #     children=[
+        #         html.Div(
+        #             "Dash:",
+        #             style={
+        #                 "position": "relative",
+        #                 "margin-left": "67px",
+        #                 "top": "8px",
+        #                 "padding": "3px",
+        #                 "border": "none",
+        #                 "color": "white",
+        #                 "display": "inline",
+        #                 "size": "10",
+        #             },
+        #         ),
+        #         html.Div(
+        #             dcc.Dropdown(
+        #                 id="line_dash_dropdown",
+        #                 options=line_dash_dropdown_options(),
+        #                 value=None,
+        #                 style={
+        #                     "width": "100px",
+        #                     "height": "8px",
+        #                     "vertical-align": "middle",
+        #                     "font-size": 10,
+        #                 },
+        #             ),
+        #             style={
+        #                 "position": "absolute",
+        #                 "margin-left": "5px",
+        #                 "margin-top": "3px",
+        #                 "background": "",
+        #                 "display": "inline",
+        #             },
+        #         ),
+        #     ],
+        #     style={
+        #         "padding-top": "20px",
+        #     },
+        # ),
+        # html.Div(
+        #     children=[
+        #         html.Div(
+        #             "Connect Gaps:",
+        #             style={
+        #                 "position": "relative",
+        #                 "margin-left": "67px",
+        #                 "top": "8px",
+        #                 "padding": "3px",
+        #                 "border": "none",
+        #                 "color": "white",
+        #                 "display": "inline",
+        #                 "size": "10",
+        #             },
+        #         ),
+        #         html.Div(
+        #             dcc.Dropdown(
+        #                 id="line_gaps_dropdown",
+        #                 options=[
+        #                     {'label': 'True', 'value': True},
+        #                     {'label': 'False', 'value': False},
+        #                 ],
+        #                 value=False,
+        #                 style={
+        #                     "width": "100px",
+        #                     "height": "8px",
+        #                     "vertical-align": "middle",
+        #                     "font-size": 10,
+        #                 },
+        #             ),
+        #             style={
+        #                 "position": "absolute",
+        #                 "margin-left": "5px",
+        #                 "margin-top": "3px",
+        #                 "background": "",
+        #                 "display": "inline",
+        #             },
+        #         ),
+        #     ],
+        #     style={
+        #         "padding-top": "20px",
+        #     },
+        # ),
+    ],
+    id='bar_formatting_options',
+    style={'display': 'none'}
+)
 #################### Navbar#################################################################################
 navbar_ = html.Div(
     [
@@ -1760,6 +2086,7 @@ sidebar_ = html.Div(
                                         ),
                                         scatter_formatting_options,
                                         line_formatting_options,
+                                        bar_formatting_options,
                                         html.Div(
                                             dcc.Markdown("**Conditional Formatting**"),
                                             id="main-title_3",
@@ -2464,25 +2791,27 @@ def serve_bar(x_axis_column, y_axis_columns, trace, dual=False):
             bar = Bar(x_axis_column[0], {'name': trace, 'dual': dual}, trace)
             bar.add_trace()
             g.fig.add_trace(bar.fig.data[0])
-            # g.traces_dict[bar.trace_name] = {'trace': bar,
-            #                                   'settings': {'Line Width': line.width,
-            #                                                'Marker Symbol': line.marker_symbol,
-            #                                                'Marker Size': line.marker_size,
-            #                                                'Line Color': line.line_color,
-            #                                                'Opacity': line.opacity,
-            #                                                'Border Width': line.border_width,
-            #                                                'Border Color': line.border_color,
-            #                                                'Mode': line.mode,
-            #                                                'Dash': line.dash,
-            #                                                'Connect Gaps': line.connectgaps,
-            #                                                'Change': '',
-            #                                                'To': [],
-            #                                                'Column': '',
-            #                                                'Operator': '',
-            #                                                'Condition': ''
-            #
-            #                                                }
-            #                                   }
+            g.traces_dict[bar.trace_name] = {'trace': bar,
+                                              'settings': {'Bar Width': bar.width,
+                                                           'Bar Color': bar.color,
+                                                           'Opacity':bar.opacity
+                                              #              'Marker Symbol': line.marker_symbol,
+                                              #              'Marker Size': line.marker_size,
+                                              #              'Line Color': line.line_color,
+                                              #              'Opacity': line.opacity,
+                                              #              'Border Width': line.border_width,
+                                              #              'Border Color': line.border_color,
+                                              #              'Mode': line.mode,
+                                              #              'Dash': line.dash,
+                                              #              'Connect Gaps': line.connectgaps,
+                                              #              'Change': '',
+                                              #              'To': [],
+                                              #              'Column': '',
+                                              #              'Operator': '',
+                                              #              'Condition': ''
+                                              #
+                                                            }
+                                              }
 
 
 def edit_scatter_options(changed_id: str, trace: str, active: object, settings: object, scatter_options: dict):
@@ -2658,6 +2987,25 @@ def line_conditional_options(active: object, trace: str, conditional_arguments: 
 
                                                }
 
+def edit_bar_options(changed_id: str, trace: str, active: object, settings: object, bar_options: dict):
+    if 'bar_width' in changed_id:
+        g.delete_trace(trace, True)
+        active.width = float(bar_options['Bar Width'])
+        update_cycle(active)
+        settings['Bar Width'] = float(bar_options['Bar Width'])
+    elif 'bar_colorpicker' in changed_id:
+        g.delete_trace(trace, True)
+        active.color = bar_options['Bar Color']
+        update_cycle(active)
+        settings['Bar Color'] = bar_options['Bar Color']
+    elif 'bar_opacity' in changed_id:
+        g.delete_trace(trace, True)
+        active.opacity = float(bar_options['Opacity'])
+        update_cycle(active)
+        settings['Opacity'] = float(bar_options['Opacity'])
+
+
+
 @app.callback(
     Output("indicator-graphic", "figure"),
     Output('trace_dropdown', 'options'),
@@ -2685,6 +3033,11 @@ def line_conditional_options(active: object, trace: str, conditional_arguments: 
     Input('line_marker_size', 'value'),
     Input("line_dash_dropdown", "value"),
     Input("line_gaps_dropdown", "value"),
+    #Bar Graph Inputs
+    Input("bar_width", "value"),
+    Input('bar_colorpicker', 'value'),
+    Input('bar_opacity', 'value'),
+    Input('bar_mode_dropdown', 'value'),
 
     # Conditional Formatting Inputs
     Input(f"conditional-change-options", "value"),
@@ -2719,6 +3072,10 @@ def update_graph(
         line_marker_size,
         line_dash,
         line_gaps,
+        bar_width,
+        bar_color,
+        bar_opacity,
+        bar_mode,
         change_option,
         change_to,
         operator,
@@ -2755,6 +3112,12 @@ def update_graph(
         'Dash': line_dash,
         'Line Gaps': line_gaps
     }
+    bar_options = {
+        'Bar Width':bar_width,
+        'Bar Color':bar_color,
+        'Opacity':bar_opacity,
+        'Mode': bar_mode
+    }
 
     dff = df.copy()
 
@@ -2770,6 +3133,12 @@ def update_graph(
             edit_scatter_options(changed_id, trace, active, settings, scatter_options)
         elif active.trace_type == 'Line':
             edit_line_options(changed_id, trace, active, settings, line_options)
+        elif active.trace_type == 'Bar':
+            # print(g.get_traces())
+            # g.delete_trace(trace)
+            edit_bar_options(changed_id, trace, active, settings, bar_options)
+            # print('after deleting')
+            # print(g.get_traces())
     ####################################################################################################################
 
     ####################################################################################################################
@@ -2861,11 +3230,13 @@ def update_graph(
 @app.callback(
     Output('scatter_formatting_options', 'style'),
     Output('line_formatting_options', 'style'),
+    Output('bar_formatting_options', 'style'),
     Input('btn_sidebar_scatter', 'n_clicks'),
     Input('btn_sidebar_lines', 'n_clicks'),
+    Input("btn_sidebar_bar", "n_clicks"),
     Input('trace_dropdown', 'value')
 )
-def serve_graph_formatting_options(scatter_nclicks, lines_nclicks, trace):
+def serve_graph_formatting_options(scatter_nclicks, lines_nclicks, bar_nclicks, trace):
     if trace in ['', None]:
         raise PreventUpdate
     time.sleep(0.05)
@@ -2873,11 +3244,15 @@ def serve_graph_formatting_options(scatter_nclicks, lines_nclicks, trace):
     trace_object = g.traces_dict[trace]
     show = {'display': "block"}
     hide = {'display': 'none'}
+    print(f'CHANGED_ID {changed_id}')
+    print(f'TRACE_TYPE {trace_object["trace"].trace_type}')
     if trace_object['trace'].trace_type == "Line" or 'lines' in changed_id:
-        return hide, show
+        return hide, show, hide
+    elif trace_object['trace'].trace_type == "Bar" or changed_id == 'btn_sidebar_bar.n_clicks':
+        return hide, hide, show
     elif trace_object['trace'].trace_type == "Scatter" or 'scatter' in changed_id:
-        return show, hide
-    return show, hide
+        return show, hide, hide
+    return show, hide, hide
 
 
 # @app.callback(
@@ -2957,6 +3332,25 @@ def update_line_panel_data(trace):
     settings = trace_object['settings']
     return [settings['Line Width'], settings['Line Color'], settings['Opacity'], settings['Mode'],
             settings['Marker Symbol'], settings['Marker Size'],settings['Dash'],settings['Connect Gaps']]
+
+@app.callback(
+    [
+        # Bar Outputs
+        Output("bar_width", "value"),
+        Output('bar_colorpicker', 'value'),
+        Output('bar_opacity', 'value')
+
+    ],
+    Input("trace_dropdown", 'value')
+)
+def update_bar_panel_data(trace):
+    if trace in ['', None]:
+        raise PreventUpdate
+    trace_object = g.traces_dict[trace]
+    if trace_object['trace'].trace_type != "Bar":
+        raise PreventUpdate
+    settings = trace_object['settings']
+    return [settings['Bar Width'], settings['Bar Color'], settings['Opacity']]
 
 
 
