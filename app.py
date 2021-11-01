@@ -28,6 +28,8 @@ import plotly
 from dash.exceptions import PreventUpdate
 from collections import namedtuple
 import time
+import plotly.express as px
+
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(
@@ -169,6 +171,55 @@ class Line(Trace):
                     name=column,
                 ),
                 secondary_y=self.y_axis_dict["dual"],
+            )
+
+class Bar(Trace):
+    """Represents a Bar Graph trace."""
+
+    def __init__(
+        self,
+        x_axis_column_name: str,
+        y_axis_dict: dict,
+        trace_name: str,
+        trace_type: str = "Bar",
+    ) -> object:
+        super().__init__(trace_name, trace_type)
+        self.x_axis_column_name = x_axis_column_name
+        self.y_axis_dict = y_axis_dict
+        self.text = None
+        self.color = "blue"
+        self.orientation = "v"
+
+    def add_trace(self):
+        traces = super().get_traces()
+        column = self.y_axis_dict["name"]
+        if column not in traces:
+            x = self.x_axis_column_name
+            y = column
+            if self.orientation == "h":
+                x = column
+                y = self.x_axis_column_name
+
+            fig = px.bar(
+                self.df,
+                x=x,
+                y=y,
+                orientation=self.orientation,
+                text=self.text
+                # color=self.color,
+                # color_discrete_sequence=["blue"],
+                # base=-self.df[column].values,
+                # base="pop",
+                # text=column,
+                # textposition="outside",
+                # texttemplate="%{text:.2s}",
+                # marker_color="lightsalmon",
+                # name=column,
+            ).data[0]
+            fig["marker"]["color"] = self.color
+            self.fig.add_trace(
+                fig,
+                # secondary_y=False,
             )
 
 
@@ -2405,6 +2456,34 @@ def serve_line(x_axis_column, y_axis_columns, trace, dual=False):
                                                            }
                                               }
 
+def serve_bar(x_axis_column, y_axis_columns, trace, dual=False):
+    g.keep_active_traces(y_axis_columns)
+    g.delete_trace(trace)
+    for y in y_axis_columns:
+        if y not in g.get_traces():
+            bar = Bar(x_axis_column[0], {'name': trace, 'dual': dual}, trace)
+            bar.add_trace()
+            g.fig.add_trace(bar.fig.data[0])
+            # g.traces_dict[bar.trace_name] = {'trace': bar,
+            #                                   'settings': {'Line Width': line.width,
+            #                                                'Marker Symbol': line.marker_symbol,
+            #                                                'Marker Size': line.marker_size,
+            #                                                'Line Color': line.line_color,
+            #                                                'Opacity': line.opacity,
+            #                                                'Border Width': line.border_width,
+            #                                                'Border Color': line.border_color,
+            #                                                'Mode': line.mode,
+            #                                                'Dash': line.dash,
+            #                                                'Connect Gaps': line.connectgaps,
+            #                                                'Change': '',
+            #                                                'To': [],
+            #                                                'Column': '',
+            #                                                'Operator': '',
+            #                                                'Condition': ''
+            #
+            #                                                }
+            #                                   }
+
 
 def edit_scatter_options(changed_id: str, trace: str, active: object, settings: object, scatter_options: dict):
     if 'scatter_marker_style_dropdown' in changed_id:
@@ -2719,6 +2798,13 @@ def update_graph(
             serve_line(xaxis_column_name, all_y_columns, trace, dual=False)
         elif trace in secondary_yaxis_columns:
             serve_line(xaxis_column_name, all_y_columns, trace, dual=True)
+
+    if "btn_sidebar_bar" in changed_id and len(xaxis_column_name) > 0 and trace not in ['', None]:
+        ####################################################################################################################
+        if trace in yaxis_column_name:
+            serve_bar(xaxis_column_name, all_y_columns, trace, dual=False)
+        elif trace in secondary_yaxis_columns:
+            serve_bar(xaxis_column_name, all_y_columns, trace, dual=True)
 
     elif "btn_sidebar_scatter" in changed_id and len(xaxis_column_name) > 0 and trace not in ['', None]:
         print('scatter button clicked')
