@@ -191,6 +191,8 @@ class Bar(Trace):
         self.orientation = "v"
         self.width = 0.9
         self.opacity = 1.0
+        self.mode = 'relative'
+        self.color_by_column = None
 
     def add_trace(self):
         traces = super().get_traces()
@@ -209,7 +211,9 @@ class Bar(Trace):
                 orientation=self.orientation,
                 opacity=self.opacity,
                 text=self.text,
-                barmode='group'
+                barmode=self.mode,
+                color=self.color_by_column,
+
                 # color=self.color,
                 # color_discrete_sequence=["blue"],
                 # base=-self.df[column].values,
@@ -220,13 +224,22 @@ class Bar(Trace):
                 # marker_color="lightsalmon",
                 # name=column,
             )
-            bar_fig.data[0]["marker"]["color"] = self.color
-            bar_fig.data[0]["name"] = self.trace_name
+            if self.color_by_column is None:
+                bar_fig.data[0]["marker"]["color"] = self.color
+                bar_fig.data[0]["name"] = self.trace_name
             bar_fig.update_traces(width=self.width)
-            self.fig.add_trace(
-                bar_fig.data[0],
-                secondary_y=self.y_axis_dict["dual"],
-            )
+
+            if self.color_by_column is not None:
+                for t in bar_fig.data:
+                    self.fig.add_trace(
+                        t,
+                        secondary_y=self.y_axis_dict["dual"],
+                    )
+            else:
+                self.fig.add_trace(
+                    bar_fig.data[0],
+                    secondary_y=self.y_axis_dict["dual"],
+                )
 
 
 def default_graph(
@@ -311,6 +324,14 @@ def line_mode_dropdown_options():
     options = [
         'lines',
         'lines+markers'
+    ]
+    return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
+
+def bar_mode_dropdown_options():
+    options = [
+        'relative',
+        'group',
+        'overlay'
     ]
     return [dict(zip(("label", "value"), option)) for option in zip(options, options)]
 
@@ -1366,9 +1387,9 @@ bar_formatting_options = html.Div(
                 html.Div(
                     dcc.Dropdown(
                         id="bar_mode_dropdown",
-                        options=line_mode_dropdown_options(),
-                        placeholder="lines",
-                        value='lines',
+                        options=bar_mode_dropdown_options(),
+                        placeholder="relative",
+                        value='relative',
                         style={
                             "width": "100px",
                             "height": "8px",
@@ -1387,6 +1408,45 @@ bar_formatting_options = html.Div(
             ],
             style={
                 "padding-top": "10px",
+            },
+        ),
+        html.Div(
+            children=[
+                html.Div(
+                    "Color by column ",
+                    style={
+                        "position": "relative",
+                        "margin-left": "67px",
+                        "top": "8px",
+                        "padding": "3px",
+                        "border": "none",
+                        "color": "white",
+                        "display": "inline",
+                        "size": "10",
+                    },
+                ),
+                html.Div(
+                    dcc.Dropdown(
+                        id="bar_color_by_column",
+                        options=[],
+                        style={
+                            "width": "150px",
+                            "height": "8px",
+                            "vertical-align": "middle",
+                            "font-size": 10,
+                        },
+                    ),
+                    style={
+                        "position": "absolute",
+                        "margin-left": "5px",
+                        "margin-top": "3px",
+                        "background": "",
+                        "display": "inline",
+                    },
+                ),
+            ],
+            style={
+                "padding-top": "20px",
             },
         ),
         # html.Div(
@@ -2728,7 +2788,20 @@ component_dict = {
 def update_cycle(active):
     active.fig.data = []
     active.add_trace()
-    g.fig.add_trace(active.fig.data[0])
+    if active.trace_type == 'Bar' and active.color_by_column is not None:
+        if active.mode == 'group':
+            g.fig.update_layout(barmode='group')
+        else:
+            g.fig.update_layout(barmode='stack')
+        for t in active.fig.data:
+            print(f't= {t}')
+            g.fig.add_trace(
+                t,
+                secondary_y=active.y_axis_dict["dual"],
+            )
+
+    else:
+        g.fig.add_trace(active.fig.data[0])
 
 
 def serve_scatter(x_axis_column, y_axis_columns, dual=False):
@@ -2790,11 +2863,24 @@ def serve_bar(x_axis_column, y_axis_columns, trace, dual=False):
         if y not in g.get_traces():
             bar = Bar(x_axis_column[0], {'name': trace, 'dual': dual}, trace)
             bar.add_trace()
-            g.fig.add_trace(bar.fig.data[0])
+            if bar.color_by_column is not None:
+                print('NOT NONE')
+                print(f'BAR FIG DATA{bar.fig.data}')
+                for t in bar.fig.data:
+                    print(f't= {t}')
+                    g.fig.add_trace(
+                        t,
+                        secondary_y=bar.y_axis_dict["dual"],
+                    )
+            else:
+                g.fig.add_trace(bar.fig.data[0])
+
             g.traces_dict[bar.trace_name] = {'trace': bar,
                                               'settings': {'Bar Width': bar.width,
                                                            'Bar Color': bar.color,
-                                                           'Opacity':bar.opacity
+                                                           'Opacity':bar.opacity,
+                                                           'Mode':bar.mode,
+                                                           'color_by_column':bar.color_by_column
                                               #              'Marker Symbol': line.marker_symbol,
                                               #              'Marker Size': line.marker_size,
                                               #              'Line Color': line.line_color,
@@ -3003,7 +3089,17 @@ def edit_bar_options(changed_id: str, trace: str, active: object, settings: obje
         active.opacity = float(bar_options['Opacity'])
         update_cycle(active)
         settings['Opacity'] = float(bar_options['Opacity'])
-
+    elif 'bar_mode_dropdown' in changed_id:
+        g.delete_trace(trace, True)
+        active.mode = bar_options['Mode']
+        update_cycle(active)
+        settings['Mode'] = bar_options['Mode']
+    elif 'bar_color_by_column' in changed_id:
+        g.delete_trace(trace, True)
+        active.color_by_column = bar_options['color_by_column']
+        update_cycle(active)
+        settings['color_by_column'] = bar_options['color_by_column']
+        #bar_color_by_column
 
 
 @app.callback(
@@ -3038,6 +3134,7 @@ def edit_bar_options(changed_id: str, trace: str, active: object, settings: obje
     Input('bar_colorpicker', 'value'),
     Input('bar_opacity', 'value'),
     Input('bar_mode_dropdown', 'value'),
+    Input('bar_color_by_column', 'value'),
 
     # Conditional Formatting Inputs
     Input(f"conditional-change-options", "value"),
@@ -3076,6 +3173,7 @@ def update_graph(
         bar_color,
         bar_opacity,
         bar_mode,
+        bar_column_by_color,
         change_option,
         change_to,
         operator,
@@ -3116,7 +3214,8 @@ def update_graph(
         'Bar Width':bar_width,
         'Bar Color':bar_color,
         'Opacity':bar_opacity,
-        'Mode': bar_mode
+        'Mode': bar_mode,
+        'color_by_column': bar_column_by_color
     }
 
     dff = df.copy()
@@ -3338,7 +3437,9 @@ def update_line_panel_data(trace):
         # Bar Outputs
         Output("bar_width", "value"),
         Output('bar_colorpicker', 'value'),
-        Output('bar_opacity', 'value')
+        Output('bar_opacity', 'value'),
+        Output('bar_mode_dropdown', 'value'),
+        Output('bar_color_by_column', 'value')
 
     ],
     Input("trace_dropdown", 'value')
@@ -3350,7 +3451,7 @@ def update_bar_panel_data(trace):
     if trace_object['trace'].trace_type != "Bar":
         raise PreventUpdate
     settings = trace_object['settings']
-    return [settings['Bar Width'], settings['Bar Color'], settings['Opacity']]
+    return [settings['Bar Width'], settings['Bar Color'], settings['Opacity'], settings['Mode'], settings['color_by_column']]
 
 
 
@@ -3410,10 +3511,11 @@ def update_conditional_change_options(scatter_btn, line_btn, trace):
 
 @app.callback(
     Output("conditional-change-columns", "options"),
+    Output('bar_color_by_column','options'),
     Input("output-data-upload", "children"),
 )
 def update_conditional_cols(contents):
-    return df_column_dropdown_options()
+    return df_column_dropdown_options(),df_column_dropdown_options()
 
 
 @app.callback(
